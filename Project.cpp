@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
  	int seed; //argv[1] 
  	float lambda; //argv[2] 
  	float max;     //argv[3]     
-  	int numProcesses; //argv[4]
+  int numProcesses; //argv[4]
   	int tCS; //argv[5]
   	double alpha; //argv[6]
   	float min;    
