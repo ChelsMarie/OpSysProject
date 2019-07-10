@@ -1,0 +1,2 @@
+void srt();
+void sjf();
