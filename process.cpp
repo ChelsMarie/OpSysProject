@@ -1,6 +1,15 @@
 #include <string>
 #include "process.h"
 
+//constructors
+process::process() {}
+
+process::process(char let, int arr, int bursts, int iTime){
+	
+}
+
+
+//gets
 char process::getLet() {
 	return(this -> letter);
 }
@@ -23,4 +32,25 @@ int process::getIOTime() {
 
 std::string process::getState() {
 	return(this -> state);
+}
+
+//sets
+void process::setState(std::string newState) {
+	this -> state == newState;
+} 
+
+void process::setLet(char newLet) {
+	this -> letter = newLet;
+}
+
+void process::setNumBursts(int newBursts) {
+	this -> arrTime = newBursts;
+}
+
+void process::setCPUTime(int newCPUTime) {
+	this -> cpuTime = newCPUTime;
+}
+
+void process::setIOTime(int newIOTime) {
+	this -> ioTime = newIOTime;
 }
