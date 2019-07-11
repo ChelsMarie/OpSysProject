@@ -1,3 +1,4 @@
+#include <string>
 #include "process.h"
 
 char process::getLet() {
@@ -18,4 +19,8 @@ int process::getCPUTime() {
 
 int process::getIOTime() {
 	return(this -> ioTime);
+}
+
+std::string process::getState() {
+	return(this -> state);
 }

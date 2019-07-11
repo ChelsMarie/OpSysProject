@@ -1,3 +1,5 @@
+#include <vector>
+
 #ifndef PROCESS_H
 #define PROCESS_H
 
@@ -8,7 +10,7 @@ class process {
         int numBursts;
         int cpuTime;
         int ioTime;
-
+	std::string state;
 
 
 	public:
@@ -17,6 +19,7 @@ class process {
 	int getBursts();
 	int getCPUTime();
 	int getIOTime();
+	std::string getState();
 };
 
 #endif
