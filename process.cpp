@@ -4,8 +4,13 @@
 //constructors
 process::process() {}
 
-process::process(char let, int arr, int bursts, int iTime){
-	
+process::process(char let, int arr, int bursts, int cTime, int iTime){
+	setLet(let);
+	setArrTime(arr);
+	setNumBursts(bursts);
+	setIOTime(iTime);
+	setCPUTime(cTime);
+	setState("ready");	
 }
 
 

@@ -10,7 +10,7 @@ class process {
         int numBursts;
         int cpuTime;
         int ioTime;
-	std::string state;
+	std::string state; //should be "ready", "running", or "blocked"
 
 	void setLet(char newLet);
 	void setArrTime(int newArrTime);
@@ -21,7 +21,7 @@ class process {
 	public:
 	//constructors
 	process();
-	process(char let, int arr, int bursts, int iTime);
+	process(char let, int arr, int bursts, int cTime, int iTime);
 
 	//gets
 	char getLet();
