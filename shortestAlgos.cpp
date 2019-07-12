@@ -18,19 +18,33 @@ processes is a vector of process classes
 		getIOTime()
 
 */
-void srt(double alpha, std::vector<process> processes) {
+void sjf(double alpha, std::vector<process> processes) {
 	//add processes as interarrival times are reached
-	std::vector<process> runList; 
+	std::vector<process> queue; 
+	//as interarrival times are reached, add process to q  
 	for(uint i = 0; i < processes.size(); i++) {
-		if(processes[i].getArr() != 0) {
+
+		std::cout << "Process" << processes[i].getLet() << "[NEW] (arrival time: ";
+		std::cout << processes[i].getArr() << "ms )" << processes[i].getBursts();
+		std::cout << "CPU bursts (tau " << processes[i].getCPUTime() << ") << std::endl; 
+
+		if(processes[i].getArr() == 0) {
 			runList.push_back(processes[i]);
+			
 		}
 	}
-
+	int t = -1; //int to count up time 	
+	while(t++) { //time loop
+		
+		std::cout << "time " << t << "ms:";
+		if(t == 0);
+	}
 	
+	
+			
 
 }
 
-void sjf(double alpha) {
+void srt(double alpha) {
 
 }
