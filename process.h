@@ -8,8 +8,10 @@ class process {
         char letter;
         int arrTime;
         int numBursts;
-        int cpuTime;
-        int ioTime;
+	int waitTime;
+	int turnAroundTime;
+        std::vector<int> cpuTimes;
+        std::vector<int> ioTimes;
 	std::string state; //should be "ready", "running", or "blocked"
 
 	void setLet(char newLet);
