@@ -13,6 +13,10 @@ class process {
         std::vector<int> cpuTimes;
         std::vector<int> ioTimes;
 	std::string state; //should be "ready", "running", or "blocked"
+	//cpu and io timing variables
+	int cpuFinTime;
+	int ioFinTime;
+
 
 	void setLet(char newLet);
 	void setArrTime(int newArrTime);
@@ -24,16 +28,26 @@ class process {
 	//constructors
 	process();
 	process(char let, int arr, int bursts, int cTime, int iTime);
+	process(const process &p2);
+
+	//operators
+	bool operator< (const process& p);
 
 	//gets
-	char getLet();
-	int getArr();
-	int getBursts();
-	int getCPUTime();
-	int getIOTime();
-	std::string getState();
+	char getLet() const;
+	int getArr() const;
+	int getBursts() const;
+	int getCPUTime() const;
+	int getIOTime() const;
+	std::string getState() const;
+	int getCPUFinTime() const;
+	int getIOFinTime() const;
 	//sets
-	void setState(std::string newState);
+	void setCPUTimes(std::vector<int> burstTimes);
+	void addCPUTime(int newTime);
+	void setState(std::string newState); //should be "ready", "running", or "blocking"
+	void setCPUFinTime(int newTime);
+	void setIOFinTime(int newTime);
 };
 
 #endif
