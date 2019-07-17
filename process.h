@@ -1,17 +1,18 @@
 #include <vector>
+#include <algorithm>
 
 #ifndef PROCESS_H
 #define PROCESS_H
 
 class process {
 	private:
-        char letter;
-        int arrTime;
-        int numBursts;
+    char letter;
+    int arrTime;
+    int numBursts;
 	int waitTime;
 	int turnAroundTime;
-        std::vector<int> cpuTimes;
-        std::vector<int> ioTimes;
+    std::vector<int> cpuTimes;
+    std::vector<int> ioTimes;
 	std::string state; //should be "ready", "running", or "blocked"
 	//cpu and io timing variables
 	int cpuFinTime;
@@ -22,13 +23,13 @@ class process {
 	void setArrTime(int newArrTime);
 	void setNumBursts(int newBursts);
 	void setCPUTime(int newCPUTime);
-	void setIOTime(int newIOTime);
 
 	public:
 	//constructors
 	process();
 	process(char let, int arr, int bursts, int cTime, int iTime);
 	process(const process &p2);
+
 
 	//operators
 	bool operator< (const process& p);
@@ -45,6 +46,7 @@ class process {
 	//sets
 	void setCPUTimes(std::vector<int> burstTimes);
 	void addCPUTime(int newTime);
+	void addIOTime(int newTime);
 	void setState(std::string newState); //should be "ready", "running", or "blocking"
 	void setCPUFinTime(int newTime);
 	void setIOFinTime(int newTime);

@@ -1,4 +1,5 @@
 #include <string>
+#include <algorithm>
 #include "process.h"
 
 //constructors
@@ -35,6 +36,8 @@ process::process(const process &p2){
 			
 
 }
+
+
 
 //operators/compare functions
 
@@ -101,6 +104,9 @@ void process::addCPUTime(int newTime) { //adds new time to the end of the proces
 	this -> cpuTimes.push_back(newTime);
 }
 
+void process::addIOTime(int newTime) {
+	this -> ioTimes.push_back(newTime);
+}
 void process::setCPUFinTime(int newTime) {
 	this -> cpuFinTime = newTime;
 }
