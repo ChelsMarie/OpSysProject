@@ -54,6 +54,7 @@ void FCFS(int numProc, std::vector<process> procs) {
 chrono::high_resolution_clock::time_point t = 0;
 std::cout << "time 0ms: Simulator started for FCFS [Q " << printQueue(queueReady) << "]" << std::endl;
 
+//prelim adding to readyqueue and showing cpu startburst
 for  (int i = 0; i < procs.size(); i++) {
   t = high_resolution_clock::now();
   if (t == procs[i].arrTime())  {
@@ -63,12 +64,32 @@ for  (int i = 0; i < procs.size(); i++) {
   }
   if (queueRunning.size() == 0) {
     queueRunning.push_back(queueReady.pop());
+     t = high_resolution_clock::now();
+     procs[i].setCPUFinTime(t+procs[i].getCPUTime());
     std::cout << "time " << t << "ms: Process " << procs[i].getLet() << " started using the CPU for " << procs[i].getCPUTime() << "ms burst [Q " << printQueue(queueReady) >> "]" << std::endl;
   }
 }
 
 while (queueDone.size()!= numProcesses) {
+  for (int i = 0; i < queueRunning.size(); i++) {
+     t = high_resolution_clock::now();   
 
+    if (queueRunning[i].getCPUFinTime() == t) {
+      queueRunning[i].removeCPUTime();
+      std::cout << "time " << t << " << ms: Process " << queueRunning[i].getLet() << " completed a CPU burst; " << queueRunning[i].getBursts() << " bursts to go [Q " << printQueue(queueReady) << "]" << std::endl;
+      
+      if (queueRunning[i].getBursts() != 0) {
+        queueBlocked.push_back(queueRunning.pop());
+      }
+      else {
+        queueDone.push_back(queueRunning.pop());
+      }
+    }
+  }
+
+  for (int i = 0; i < queueReady.size(); i++) {
+
+  }
 }
 
 }

@@ -6,6 +6,7 @@
 process::process() {}
 
 process::process(char let, int arr, int bursts, int cTime, int iTime){
+	numBursts = cpuTimes.size();
 	setLet(let);
 	setArrTime(arr);
 	setNumBursts(bursts);
@@ -57,7 +58,7 @@ int process::getArr() const{
 }
 
 int process::getBursts() const{
-	return(this -> numBursts);
+	return(this -> cpuTimes.size());
 }
 
 int process::getCPUTime() const{
@@ -90,7 +91,7 @@ void process::setLet(char newLet) {
 }
 
 void process::setNumBursts(int newBursts) {
-	this -> arrTime = newBursts;
+	this -> numBursts = newBursts;
 }
 
 void process::setCPUTimes(std::vector<int> burstTimes){
@@ -102,6 +103,10 @@ void process::setCPUTimes(std::vector<int> burstTimes){
 
 void process::addCPUTime(int newTime) { //adds new time to the end of the process
 	this -> cpuTimes.push_back(newTime);
+}
+
+void process::removeCPUTime() {
+	cpuTimes.erase(cpuTimes.begin());
 }
 
 void process::addIOTime(int newTime) {

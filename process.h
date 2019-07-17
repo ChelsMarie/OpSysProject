@@ -46,6 +46,7 @@ class process {
 	//sets
 	void setCPUTimes(std::vector<int> burstTimes);
 	void addCPUTime(int newTime);
+	void removeCPUTime();
 	void addIOTime(int newTime);
 	void setState(std::string newState); //should be "ready", "running", or "blocking"
 	void setCPUFinTime(int newTime);
