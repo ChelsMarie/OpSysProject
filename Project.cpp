@@ -14,7 +14,7 @@
 #include "shortestAlgos.h"
 
 //print ready queue
-void printQueue (std::vector<process> queue) {
+void printQueue (std::vector<process> &queue) {
   for (uint i = 0; i < queue.size(); i++) {
     std::cout << " " << queue[i].getLet();
   }
@@ -40,7 +40,7 @@ bool sortProcesses (const process& p1, const process& p2) {
   }
 }
 
-void preemptionCheck(std::vector<process> q, std::vector<process> qReady, int cS, int timeSlice, std::string placement,int numPreemptions, int t) {
+void preemptionCheck(std::vector<process> &q, std::vector<process> &qReady, int cS, int timeSlice, std::string placement,int numPreemptions, int t) {
     numPreemptions++;
 
     std::vector<process> qReadyPushFront;
@@ -67,19 +67,19 @@ void preemptionCheck(std::vector<process> q, std::vector<process> qReady, int cS
         }
         q.clear();
 
-        std::cout << "time " << t << "ms: Time slice expired; process " << qReady[0].getLet() << " preempted with " << qReady[0].getCPUFinTime() << "ms to go [Q ";
+        std::cout << "time " << t << "ms: Time slice expired; process " << qReady[0].getLet() << " preempted with " << qReady[0].getCPUFinTime() << "ms to go [Q";
         printQueue(qReady);
         std::cout << " ]" << std::endl;
     }
 }
 
-void addToRunningQueue(std::vector<process> q, std::vector<process> qReady, int t) {
+void addToRunningQueue(std::vector<process> &q, std::vector<process> &qReady, int t) {
     if (q.size() == 0) {
         q.push_back(qReady[0]);
 
         qReady.erase(qReady.begin());
         q[0].setCPUFinTime(t + q[0].getCPUTime());
-        std::cout << "time " << t << "ms: Process " << q[0].getLet() << " started using the CPU for " << q[0].getCPUTime() << "ms burst [Q ";
+        std::cout << "time " << t << "ms: Process " << q[0].getLet() << " started using the CPU for " << q[0].getCPUTime() << "ms burst [Q";
         printQueue(qReady);
         std::cout << "]" << std::endl;
 
@@ -88,10 +88,10 @@ void addToRunningQueue(std::vector<process> q, std::vector<process> qReady, int 
 
 }
 
-void checkCPUFinish(std::vector<process> q, std::vector<process> qReady, int cS, int timeSlice, std::string placement, int numPreemptions, int t) {
+void checkCPUFinish(std::vector<process> &q, std::vector<process> &qReady, int cS, int timeSlice, std::string placement, int numPreemptions, int t) {
     if (q[0].getCPUFinTime() == t) {
           q[0].removeCPUTime();
-          std::cout << "time " << t << " << ms: Process " << q[0].getLet() << " completed a CPU burst; " << q[0].getBursts() << " bursts to go [Q ";
+          std::cout << "time " << t << " << ms: Process " << q[0].getLet() << " completed a CPU burst; " << q[0].getBursts() << " bursts to go [Q";
           printQueue(qReady);
           std::cout << "]" << std::endl;
           q.clear();
@@ -106,19 +106,19 @@ void checkCPUFinish(std::vector<process> q, std::vector<process> qReady, int cS,
 
 //check to see if the process has any more CPU bursts and if not it's completely done
 //if it does, add it to the blocked queue
-void checkBurstsLeft(std::vector<process> q, std::vector<process> qReady, std::vector<process> qBlocked, std::vector<process> qDone, int t) {
+void checkBurstsLeft(std::vector<process> &q, std::vector<process> &qReady, std::vector<process> &qBlocked, std::vector<process> &qDone, int t) {
     if (q[0].getBursts() != 0) {
         q[0].setIOFinTime(t + q[0].getIOTime());
         q[0].setState("blocked");
         qBlocked.push_back(q[0]);
         q.clear();
-        std::cout << "time " << t << "ms: Process " << qBlocked[0].getLet() << " switching out of CPU; will block on I/O until time " << qBlocked[0].getIOFinTime() << "ms [Q ";
+        std::cout << "time " << t << "ms: Process " << qBlocked[0].getLet() << " switching out of CPU; will block on I/O until time " << qBlocked[0].getIOFinTime() << "ms [Q";
         printQueue(qReady);
         std::cout << "]" << std::endl;
     }
 
     else {
-        std::cout << "time " << t << "ms: Process " << q[0].getLet() << " terminated [Q ";
+        std::cout << "time " << t << "ms: Process " << q[0].getLet() << " terminated [Q";
         printQueue(qReady);
         std::cout << "]" << std::endl;
 
@@ -127,7 +127,7 @@ void checkBurstsLeft(std::vector<process> q, std::vector<process> qReady, std::v
     }
 }
 
-void checkIOFinish(std::vector<process> q, std::vector<process> qReady, std::vector<process> qBlocked, int t) {
+void checkIOFinish(std::vector<process> &q, std::vector<process> &qReady, std::vector<process> &qBlocked, int t) {
     if (q[0].getIOFinTime() == t) {
         q[0].removeIOTime();
         q[0].setState("ready");
@@ -137,14 +137,14 @@ void checkIOFinish(std::vector<process> q, std::vector<process> qReady, std::vec
         //increment waittime
         qReady[0].incrememntWaitTime();
 
-        std::cout << "time " << t << "ms: Process " << q[0].getLet() << " completed I/O; added to ready queue [Q ";
+        std::cout << "time " << t << "ms: Process " << q[0].getLet() << " completed I/O; added to ready queue [Q";
         printQueue(qReady);
         std::cout << "]" << std::endl;
     }
 
 }
 
-void RR(uint numProc,std::vector<process> procs, int timeContextSwitch, int timeslice, std::string position, std::ofstream &outfile) {
+void RR(uint numProc, std::vector<process> &procs, int timeContextSwitch, int timeslice, std::string position, std::ofstream &outfile) {
 
 int numPre = 0;
 int totalBursts = 0;
@@ -168,7 +168,7 @@ std::sort(procs.begin(),procs.end(),sortProcesses);
 
 int time = 0;
 
-std::cout << "time 0ms: Simulator started for RR [Q ";
+std::cout << "time 0ms: Simulator started for RR [Q";
 printQueue(queueReady);
 std::cout << "]" << std::endl;
 
@@ -200,7 +200,7 @@ while (queueDone.size() != numProc) {
 
 
 
-std::cout << "time " <<  time << "ms: Simulator ended for RR [Q ";
+std::cout << "time " <<  time << "ms: Simulator ended for RR [Q";
 printQueue(queueReady);
 std::cout << "]" << std::endl;
 
@@ -229,7 +229,7 @@ outfile << "-- total number of preemptions: " << numPre << "\n";
 } //end of RR
 
 
-void FCFS(uint numProc, std::vector<process> procs, int tCS, std::ofstream& outfile) {
+void FCFS(uint numProc, std::vector<process> &procs, int tCS, std::ofstream& outfile) {
 
  std::vector<process> queueBlocked;
  std::vector<process> queueReady;
@@ -253,7 +253,7 @@ std::sort(procs.begin(),procs.end(),sortProcesses);
 
 int time = 0;
 
-std::cout << "time 0ms: Simulator started for FCFS [Q ";
+std::cout << "time 0ms: Simulator started for FCFS [Q";
 printQueue(queueReady);
 std::cout << "]" << std::endl;
 
@@ -285,7 +285,7 @@ while (queueDone.size() != numProc) {
 
 
 
-std::cout << "time " <<  time << "ms: Simulator ended for FCFS [Q ";
+std::cout << "time " <<  time << "ms: Simulator ended for FCFS [Q";
 printQueue(queueReady);
 std::cout << "]" << std::endl;
 
@@ -346,7 +346,7 @@ int main(int argc, char* argv[]) {
   std::vector<process> processes;
   std::string alphabetLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    //std::cout << "here" << std::endl;
+  std::cout << "here" << std::endl;
   //does stackdump file error with everything else commented out
   //do interarrival times
   srand48( seed );
@@ -390,12 +390,10 @@ int main(int argc, char* argv[]) {
 
     std::ofstream outputFile("simout.txt");
 
-    FCFS (numProcesses,processes,tCS,outputFile);
-    RR (numProcesses,processes,tCS,timeSlice,rrAdd,outputFile);
-    sjf(alpha, processes, tCS);
+    //FCFS (numProcesses,processes,tCS,outputFile);
+    //RR (numProcesses,processes,tCS,timeSlice,rrAdd,outputFile);
+    //sjf(alpha, processes, tCS);
     outputFile.close();
-
-
 
   return EXIT_SUCCESS;
 }
