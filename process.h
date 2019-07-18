@@ -67,6 +67,7 @@ class process {
 	void setCPUTime(int newCPUTime);
 	void setIOTime(int newIOTime);
 	void incrememntWaitTime();
+	void removeCPUTime();
 
 };
 

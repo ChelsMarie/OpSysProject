@@ -202,6 +202,10 @@ void process::incrememntWaitTime() {
 	 this -> waitTime++;
 }
 
+void process::removeCPUTime() {
+	cpuTimes.pop();
+}
+
 
 
 /*

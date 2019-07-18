@@ -22,7 +22,7 @@ void printQueue (std::vector<process> queue) {
 }
 
 //sorting algo for breaking ties
-bool sortProcesses() (const process& p1, const process& p2) {
+bool sortProcesses (const process& p1, const process& p2) {
   if (p1.getArr() != p2.getArr()) {
     return p1.getArr() < p2.getArr();
   }
@@ -45,23 +45,21 @@ void addToRunningQueue(std::vector<process> q, std::vector<process> qReady, int 
     if (q.size() == 0) {
         q.push_back(qReady[0]);
 
-        qReady.erase(qReady[0]);
-        q[i].setCPUFinTime(t + q[i].getCPUTime());
+        qReady.erase(qReady.begin());
+        q[0].setCPUFinTime(t + q[0].getCPUTime());
         std::cout << "time " << t << "ms: Process " << q[0].getLet() << " started using the CPU for " << q[i].getCPUTime() << "ms burst [Q ";
         printQueue(qReady);
         std::cout << "]" << std::endl;
 
         q[0].setState("running");
   }
-  else {
-    continue;
-  }
+
 }
 
 void checkCPUFinish(std::vector<process> q, std::vector<process> qReady, int cS, int timeSlice, std::string placement, int numPreemptions, int t) {
     if (q[0].getCPUFinTime() == t) {
           q[0].removeCPUTime();
-          std::cout << "time " << t << " << ms: Process " << q[i].getLet() << " completed a CPU burst; " << q[i].getBursts() << " bursts to go [Q ";
+          std::cout << "time " << t << " << ms: Process " << q[i].getLet() << " completed a CPU burst; " << q[0].getBursts() << " bursts to go [Q ";
           printQueue(qReady);
           std::cout << "]" << std::endl;
           
@@ -69,16 +67,12 @@ void checkCPUFinish(std::vector<process> q, std::vector<process> qReady, int cS,
     }
     else {
         preemptionCheck(q,qReady,cS,timeSlice,placement,numPreemptions, int t);
-        continue;
     }
 }
 
 void preemptionCheck(std::vector<process> q, std::vector<process> qReady, int cS, int timeSlice, std::string placement,int numPreemptions, int t) {
     numPreemptions++;
-    if (q[0].getCPUFinTime() <= t + timeSlice) {
-        continue;
-    }
-    else {
+    if (q[0].getCPUFinTime() > t + timeSlice) {
         if (qReady.size() != 0) {
             numContextSwitches++;
         }
@@ -134,10 +128,7 @@ void checkIOFinish(std::vector<process> q, std::vector<process> qReady, std::vec
         std::cout << "]" << std::endl;
     }
 
-    else {
-        continue;
-    }
-}
+
 
 void RR(int numProc,std::vector<process> procs, int timeContextSwitch, int timeslice, std::string position, ofstream &outfile) {
 
