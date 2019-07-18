@@ -21,7 +21,7 @@ class process {
 	//cpu and io timing variables
 	int cpuFinTime;
 	int ioFinTime;
-
+	int tau;
 
 	public:
 	//constructors
@@ -68,6 +68,7 @@ class process {
 	void setIOTime(int newIOTime);
 	void incrememntWaitTime();
 	void removeCPUTime();
+	void removeIOTime();
 
 };
 
