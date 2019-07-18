@@ -1,3 +1,5 @@
+//Project by Chelsea Bovell (bovelc) and George Tate (tateg)
+
 #include <string>
 #include <algorithm>
 #include "process.h"
@@ -87,37 +89,24 @@ std::vector<int> processs::getAllCPUTimes() {
 	return (this -> cpuTimes);
 }
 
-std::chrono::high_resolution_clock::time_point process::getTurnaroundTime() const {
+int process::getTurnaroundTime() const {
 	return (this -> turnAroundTime);
 }
-std::chrono::high_resolution_clock::time_point process::getBeginWait() const {
-	return (this -> beginWait);
-}
-std::chrono::high_resolution_clock::time_point process::getEndWait() const {
-	return (this -> endWait);
+
+int getTotalWaitTime() const {
+	returm (this -> waitTime);
 }
 
-std::chrono::high_resolution_clock::time_point process::waitTimeTotalCalc() const {
-	for(int i = 0; i < waitTimes.size(); i++) {
-		waitTimeTotal += waitTimes[i];
-	}
-	return waitTimeTotal;
-}
 
 //sets
 void process::setState(std::string newState) {
 	this -> state = newState;
 } 
 
-void process::setturnAroundTime(std::chrono::high_resolution_clock::time_point newTime) {
+void process::setturnAroundTime(int newTime) {
 	this -> turnAroundTime = newTime;
 }
-void process::setBeginWait(std::chrono::high_resolution_clock::time_point newTime) {
-	this -> waitTime = newTime;
-}
-void process::setEndWait(std::chrono::high_resolution_clock::time_point newTime) {
-	this -> waitTime = newTime;
-}
+
 void process::setLet(char newLet) {
 	this -> letter = newLet;
 }
@@ -156,18 +145,13 @@ void process::setIOFinTime(int newTime) {
 	this -> ioFinTime = newTime;
 }
 
-void setturnAroundTime(std::chrono::high_resolution_clock::time_point newTime) {
+void process::setturnAroundTime(int newTime) {
 	this -> turnAroundTime = newTime;
 }
 
-void setwaitTime(std::chrono::high_resolution_clock::time_point newTime) {
-	this -> waitTime = newTime;
+void process::incrememntWaitTime() {
+	 this -> waitTime++;
 }
-
-void process::addWaitTime(int newTime) {
-	waitTimes.push_back(newTime);
-}
-
 
 
 

@@ -1,3 +1,5 @@
+//Project by Chelsea Bovell (bovelc) and George Tate (tateg)
+
 #include <iostream>
 #include <algorithm>
 #include <cctype>

@@ -1,3 +1,5 @@
+//Project by Chelsea Bovell (bovelc) and George Tate (tateg)
+
 #include <vector>
 #include <algorithm>
 #include <chrono>
@@ -9,14 +11,11 @@ class process {
 	private:
     char letter;
     int arrTime;
-    int numBursts;
-	std::chrono::high_resolution_clock::time_point beginWait;
-	std::chrono::high_resolution_clock::time_point endWait;
-	std::chrono::high_resolution_clock::time_point waitTimeTotal;
-	std::chrono::high_resolution_clock::time_point turnAroundTime;
+    int numBursts;;
+	int waitTime;
+	int turnAroundTime;
     std::vector<int> cpuTimes;
     std::vector<int> ioTimes;
-    std::vector<std::chrono::high_resolution_clock::time_point> waitTimes;
 	std::string state; //should be "ready", "running", or "blocked"
 	//cpu and io timing variables
 	int cpuFinTime;
@@ -44,20 +43,16 @@ class process {
 	int getBursts() const;
 	int getCPUTime() const;
 	int getIOTime() const;
-	std::string getState() const;\
+	std::string getState() const;
 	std::vector<int> getAllCPUTimes();
 	int getCPUFinTime() const;
 	int getIOFinTime() const;
-	std::chrono::high_resolution_clock::time_point getTurnaroundTime() const;
-	std::chrono::high_resolution_clock::time_point getBeginWait() const; 
-	std::chrono::high_resolution_clock::time_point getEndWait() const; 
-	std::chrono::high_resolution_clock::time_point process::waitTimeTotalCalc() const 
+	int getTurnaroundTime() const;
+	int getTotalWaitTime() const;
 
 	//sets
 	void setCPUTimes(std::vector<int> burstTimes);
-	void setturnAroundTime(std::chrono::high_resolution_clock::time_point newTime);
-	void setBeginWait(std::chrono::high_resolution_clock::time_point newTime);
-	void setEndWait(std::chrono::high_resolution_clock::time_point newTime);
+	void setturnAroundTime(int newTime);
 	void addCPUTime(int newTime);
 	void removeCPUTime();
 	void removeIOTime()
@@ -65,8 +60,7 @@ class process {
 	void setState(std::string newState); //should be "ready", "running", or "blocking"
 	void setCPUFinTime(int newTime);
 	void setIOFinTime(int newTime);
-	void addWaitTime(int newTime);
-	void waitTimeTotalCalc();
+	void incrememntWaitTime();
 };
 
 #endif
