@@ -86,8 +86,11 @@ int process::getIOFinTime() const{
 std::chrono::high_resolution_clock::time_point process::getTurnaroundTime() const {
 	return (this -> turnAroundTime);
 }
-std::chrono::high_resolution_clock::time_point process::getWaitTime() const {
-	return (this -> waitTime);
+std::chrono::high_resolution_clock::time_point process::getBeginWait() const {
+	return (this -> beginWait);
+}
+std::chrono::high_resolution_clock::time_point process::getEndWait() const {
+	return (this -> endWait);
 }
 
 //sets
@@ -98,10 +101,12 @@ void process::setState(std::string newState) {
 void process::setturnAroundTime(std::chrono::high_resolution_clock::time_point newTime) {
 	this -> turnAroundTime = newTime;
 }
-void process::setwaitTime(std::chrono::high_resolution_clock::time_point newTime) {
+void process::setBeginWait(std::chrono::high_resolution_clock::time_point newTime) {
 	this -> waitTime = newTime;
 }
-
+void process::setEndWait(std::chrono::high_resolution_clock::time_point newTime) {
+	this -> waitTime = newTime;
+}
 void process::setLet(char newLet) {
 	this -> letter = newLet;
 }
@@ -148,6 +153,15 @@ void setwaitTime(std::chrono::high_resolution_clock::time_point newTime) {
 	this -> waitTime = newTime;
 }
 
+void process::addWaitTime(int newTime) {
+	waitTimes.push_back(newTime);
+}
+
+void process::waitTimeTotalCalc() {
+	for(int i = 0; i < waitTimes.size()) {
+		waitTimeTotal += waitTimes[i];
+	}
+}
 /*
 void process::setCPUTime(int newCPUTime) {
 	this -> cpuTime = newCPUTime;
