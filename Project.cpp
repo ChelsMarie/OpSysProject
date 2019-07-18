@@ -48,7 +48,7 @@ void addToRunningQueue(std::vector<process> q, std::vector<process> qReady) {
 
         qReady.erase(qReady[0]);
         t = high_resolution_clock::now();
-        q[i].setCPUFinTime(t+q[i].getCPUTime());
+        q[i].setCPUFinTime(t + q[i].getCPUTime());
         std::cout << "time " << std::chrono::duration_cast<chrono::milliseconds> t << "ms: Process " << q[0].getLet() << " started using the CPU for " << q[i].getCPUTime() << "ms burst [Q " << printQueue(qReady) >> "]" << std::endl;
         q[0].setState("running");
   }
@@ -57,17 +57,39 @@ void addToRunningQueue(std::vector<process> q, std::vector<process> qReady) {
   }
 }
 
-void checkCPUFinish(std::vector<process> q, std::vector<process> qReady, int cS) {
+void checkCPUFinish(std::vector<process> q, std::vector<process> qReady, int cS, int timeSlice, std::string placement, int numPreemptions) {
     t = high_resolution_clock::now();     
 
     if (q[0].getCPUFinTime() == t) {
           q[0].removeCPUTime();
           t = high_resolution_clock::now();   
           std::cout << "time " << std::chrono::duration_cast<chrono::milliseconds> t << " << ms: Process " << q[i].getLet() << " completed a CPU burst; " << q[i].getBursts() << " bursts to go [Q " << printQueue(qReady) << "]" << std::endl;
-          numContextSwitche++;
+          numContextSwitches++;
     }
     else {
+        preemptionCheck(q,qReady,cS,timeSlice,placement,numPreemptions);
         continue;
+    }
+}
+
+void preemptionCheck(std::vector<process> q, std::vector<process> qReady, int cS, int timeSlice, std::string placement,int numPreemptions) {
+    t = high_resolution_clock::now();
+    numPreemptions++;
+    if (q[0].getCPUFinTime() <= t + timeSlice) {
+        continue;
+    }
+    else {
+        if (qReady.size() != 0) {
+            numContextSwitches++;
+        }
+
+        q[0].setCPUFinTime(q[0].getCPUFinTime() -  timeSlice);
+        qReady.push_back(q[0].pop());
+
+        qReady[0].setBeginWait(high_resolution_clock::now());
+
+        t = high_resolution_clock::now();
+        std::cout << "time " << t << "ms: Time slice expired; process " << qReady[0].getLet() << " preempted with " << qReady[0].getCPUFinTime() << "ms to go [Q " << printQueue(readyQueue) << " ]" << std::endl;
     }
 }
 
@@ -110,6 +132,7 @@ void checkIOFinish(std::vector<process> q, std::vector<process> qReady, std::vec
 
 void RR(int numProc,std::vector<process> procs, int timeContextSwitch, int timeslice, std::string position, ofstream &outfile) {
 
+int numPre = 0;
 
  std::vector<process> queueBlocked;
  std::vector<process> queueReady;
@@ -150,7 +173,7 @@ while (queueDone.size() != numProcesses) {
         t = high_resolution_clock::now();   
 
         addToRunningQueue(queueRunning,queueReady);
-        checkCPUFinish(queueRunning,queueReady,numContextSwitches);
+        checkCPUFinish(queueRunning,queueReady,numContextSwitches,0,"",0);
         checkIOFinish(queueRunning,queueReady,queueBlocked);
         checkBurstsLeft(queueRunning,queueReady,queueBlocked);
 
@@ -184,12 +207,12 @@ for (int i = 0; i < numProcesses; i++) {
 //-- total number of context switches: #
 //-- total number of preemptions: #
 
-outfile << "Algorithm FCFS\n";
+outfile << "Algorithm RR\n";
 outfile << "-- average CPU burst time: " << avgCPUBurstTime << " ms\n";;
 outfile << "-- average wait time: " << avgWaitTime << " ms\n";
 outfile << "-- average turnaround time: " << avgTurnaroundTime << " ms\n";
 outfile << "-- total number of context switches: " << numContextSwitches << "\n";
-outfile << "-- total number of preemptions: 0\n";
+outfile << "-- total number of preemptions: " << numPre << "\n";
 
 }
 
@@ -234,7 +257,7 @@ while (queueDone.size() != numProcesses) {
         t = high_resolution_clock::now();   
 
         addToRunningQueue(queueRunning,queueReady);
-        checkCPUFinish(queueRunning,queueReady,numContextSwitches);
+        checkCPUFinish(queueRunning,queueReady,numContextSwitches,0,"",0);
         checkIOFinish(queueRunning,queueReady,queueBlocked);
         checkBurstsLeft(queueRunning,queueReady,queueBlocked);
 
