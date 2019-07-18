@@ -48,7 +48,7 @@ void preemptionCheck(std::vector<process> q, std::vector<process> qReady, int cS
     std::vector<process> qReadyPushFront;
 
 
-    if (q[0].getCPUFintime() > t + timeSlice) {
+    if (q[0].getCPUFinTime() > t + timeSlice) {
         if (qReady.size() != 0) {
             cS++;
         }
@@ -69,7 +69,7 @@ void preemptionCheck(std::vector<process> q, std::vector<process> qReady, int cS
         }
         q.clear();
 
-        std::cout << "time " << t << "ms: Time slice expired; process " << qReady[0].getLet() << " preempted with " << qReady[0].getCPUFintime() << "ms to go [Q ";
+        std::cout << "time " << t << "ms: Time slice expired; process " << qReady[0].getLet() << " preempted with " << qReady[0].getCPUFinTime() << "ms to go [Q ";
         printQueue(qReady);
         std::cout << " ]" << std::endl;
     }
@@ -80,7 +80,7 @@ void addToRunningQueue(std::vector<process> q, std::vector<process> qReady, int 
         q.push_back(qReady[0]);
 
         qReady.erase(qReady.begin());
-        q[0].setCPUFintime(t + q[0].getCPUTime());
+        q[0].setCPUFinTime(t + q[0].getCPUTime());
         std::cout << "time " << t << "ms: Process " << q[0].getLet() << " started using the CPU for " << q[0].getCPUTime() << "ms burst [Q ";
         printQueue(qReady);
         std::cout << "]" << std::endl;
@@ -91,7 +91,7 @@ void addToRunningQueue(std::vector<process> q, std::vector<process> qReady, int 
 }
 
 void checkCPUFinish(std::vector<process> q, std::vector<process> qReady, int cS, int timeSlice, std::string placement, int numPreemptions, int t) {
-    if (q[0].getCPUFintime() == t) {
+    if (q[0].getCPUFinTime() == t) {
           q[0].removeCPUTime();
           std::cout << "time " << t << " << ms: Process " << q[0].getLet() << " completed a CPU burst; " << q[0].getBursts() << " bursts to go [Q ";
           printQueue(qReady);
@@ -110,11 +110,11 @@ void checkCPUFinish(std::vector<process> q, std::vector<process> qReady, int cS,
 //if it does, add it to the blocked queue
 void checkBurstsLeft(std::vector<process> q, std::vector<process> qReady, std::vector<process> qBlocked, std::vector<process> qDone, int t) {
     if (q[0].getBursts() != 0) {
-        q[0].setIOFintime(t + q[0].getIOTime());
+        q[0].setIOFinTime(t + q[0].getIOTime());
         q[0].setState("blocked");
         qBlocked.push_back(q[0]);
         q.clear();
-        std::cout << "time " << t << "ms: Process " << qBlocked[0].getLet() << " switching out of CPU; will block on I/O until time " << qBlocked[0].getIOFintime() << "ms [Q ";
+        std::cout << "time " << t << "ms: Process " << qBlocked[0].getLet() << " switching out of CPU; will block on I/O until time " << qBlocked[0].getIOFinTime() << "ms [Q ";
         printQueue(qReady);
         std::cout << "]" << std::endl;
     }
@@ -130,7 +130,7 @@ void checkBurstsLeft(std::vector<process> q, std::vector<process> qReady, std::v
 }
 
 void checkIOFinish(std::vector<process> q, std::vector<process> qReady, std::vector<process> qBlocked, int t) {
-    if (q[0].getIOFintime() == t) {
+    if (q[0].getIOFinTime() == t) {
         q[0].removeIOTime();
         q[0].setState("ready");
         qReady.push_back(qBlocked[0]);
@@ -441,12 +441,16 @@ int main(int argc, char* argv[]) {
     for (int j = 0; j < proc.getBursts(); j++) {
       r = drand48();
       double rNext = drand48();
-      proc.addCPUTime((int)ceil(r));
+      x = -log( r ) / lambda;
+      proc.addCPUTime((int)ceil(x));
       #ifdef DEBUGMODE
       //std::cout << "first time is: " << proc.getCPUTime() << std::endl;
       //std::cout << "Added time: " << r << std::endl;
       #endif
-      if(j != proc.getBursts()-1) proc.addIOTime(ceil(rNext));
+      if(j != proc.getBursts()-1) {
+        x = -log( rNext ) / lambda;
+	proc.addIOTime(ceil(rNext));
+      }
     }
 
     processes.push_back(proc);
