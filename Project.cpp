@@ -13,8 +13,6 @@
 #include <fstream>
 #include "shortestAlgos.h"
 
-using namespace std;
-
 //print ready queue
 void printQueue (std::vector<process> queue) {
   for (uint i = 0; i < queue.size(); i++) {
@@ -86,7 +84,7 @@ void addToRunningQueue(std::vector<process> q, std::vector<process> qReady, int 
         std::cout << "]" << std::endl;
 
         q[0].setState("running");
-  }
+    }
 
 }
 
@@ -146,7 +144,7 @@ void checkIOFinish(std::vector<process> q, std::vector<process> qReady, std::vec
 
 }
 
-void RR(int numProc,std::vector<process> procs, int timeContextSwitch, int timeslice, std::string position, ofstream &outfile) {
+void RR(uint numProc,std::vector<process> procs, int timeContextSwitch, int timeslice, std::string position, std::ofstream &outfile) {
 
 int numPre = 0;
 int totalBursts = 0;
@@ -161,7 +159,7 @@ int numContextSwitches = 0;
 std::sort(procs.begin(),procs.end(),sortProcesses);
 
 //preliminarily print all procs and their arrival times and CPU burst
- for (int i = 0; i < numProc; i++) {
+ for (uint i = 0; i < numProc; i++) {
     totalBursts += procs[i].getBursts();
     CPUTimes = procs[i].getAllCPUTimes();
     std::cout << "Process " << procs[i].getLet() << "[NEW] (arrival time " << procs[i].getArr() << " ms) " << procs[i].getBursts() << " CPU bursts" << std::endl;
@@ -175,7 +173,7 @@ printQueue(queueReady);
 std::cout << "]" << std::endl;
 
 //prelim adding to readyqueue and showing cpu start burst
-for  (int i = 0; i < procs.size(); i++) {
+for  (uint i = 0; i < procs.size(); i++) {
   if (time == procs[i].getArr())  {
     queueReady.push_back(procs[i]);
     
@@ -204,14 +202,14 @@ while (queueDone.size() != numProc) {
 
 std::cout << "time " <<  time << "ms: Simulator ended for RR [Q ";
 printQueue(queueReady);
-std:cout << "]" << std::endl;
+std::cout << "]" << std::endl;
 
 
 
  int totalCPUTimes;   
  int totalWaitTimes; 
 //calculate wait time total
-for (int i = 0; i < numProc; i++) {
+for (uint i = 0; i < numProc; i++) {
     totalWaitTimes = procs[i].getTotalWaitTime();
     totalCPUTimes += CPUTimes[i];
 }
@@ -231,7 +229,7 @@ outfile << "-- total number of preemptions: " << numPre << "\n";
 } //end of RR
 
 
-void FCFS(int numProc, std::vector<process> procs, int tCS, ofstream& outfile) {
+void FCFS(uint numProc, std::vector<process> procs, int tCS, std::ofstream& outfile) {
 
  std::vector<process> queueBlocked;
  std::vector<process> queueReady;
@@ -239,13 +237,15 @@ void FCFS(int numProc, std::vector<process> procs, int tCS, ofstream& outfile) {
  std::vector<process> queueDone; //when all cpu bursts are done, process goes here
  std::vector<int> CPUTimes;
 
+
  int numContextSwitches = 0;
  int totalBursts = 0;
+
 
 std::sort(procs.begin(),procs.end(),sortProcesses);
 
 //preliminarily print all procs and their arrival times and CPU burst
- for (int i = 0; i < numProc; i++) {
+ for (uint i = 0; i < numProc; i++) {
     totalBursts += procs[i].getBursts();
     CPUTimes = procs[i].getAllCPUTimes();
     std::cout << "Process " << procs[i].getLet() << "[NEW] (arrival time " << procs[i].getArr() << " ms) " << procs[i].getBursts() << " CPU bursts" << std::endl;
@@ -258,7 +258,7 @@ printQueue(queueReady);
 std::cout << "]" << std::endl;
 
 //prelim adding to readyqueue and showing cpu start burst
-for  (int i = 0; i < procs.size(); i++) {
+for  (uint i = 0; i < procs.size(); i++) {
   if (time == procs[i].getArr())  {
     queueReady.push_back(procs[i]);
     
@@ -293,7 +293,7 @@ std::cout << "]" << std::endl;
 int totalCPUTimes;   
 int totalWaitTimes; 
 //calculate wait time total
-for (int i = 0; i < numProc; i++) {
+for (uint i = 0; i < numProc; i++) {
     totalWaitTimes = procs[i].getTotalWaitTime();
     totalCPUTimes += CPUTimes[i];
 }
@@ -323,16 +323,82 @@ int main(int argc, char* argv[]) {
     return(EXIT_FAILURE);
   }
 
-
   int seed; //argv[1] 
   double lambda; //argv[2] 
-  double max;     //argv[3]     
+  int max;     //argv[3]     
   int numProcesses; //argv[4]
   int tCS; //argv[5]
   double alpha; //argv[6]
-  double timeSlice; //argv[7]
+  int timeSlice; //argv[7]
   std::string rrAdd = "END"; //argv[8]
 
+
+  seed = atoi(argv[1]);
+  lambda = atof(argv[2]);
+  max = atoi(argv[3]);
+  numProcesses = atoi(argv[4]);
+  tCS = atoi(argv[5]);
+  alpha  = atof(argv[6]);
+  timeSlice = atoi(argv[7]);
+  rrAdd = (std::string) argv[8];
+
+
+  std::vector<process> processes;
+  std::string alphabetLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    //std::cout << "here" << std::endl;
+  //does stackdump file error with everything else commented out
+  //do interarrival times
+  srand48( seed );
+
+  for ( int i = 0 ; i < numProcesses ; i++ ) {
+
+    process proc;
+
+    double r = drand48();   /* uniform dist [0.00,1.00) -- also check out random() */
+    double x = -log( r ) / lambda;  /* log() is natural log */
+
+    /* avoid values that are far down the "long tail" of the distribution */
+    if ( x > max ) { i--; continue; }
+
+    //set letters to correspond with proc ID
+    proc.setLet(alphabetLetters.at(i));
+
+    proc.setArrTime(floor(x));
+    
+    r = drand48();
+    int bursts = (r*100)+1;
+    //std::cout << "Bursts: " << bursts << std::endl;
+    proc.setNumBursts(bursts);   
+
+    proc.setInitialTau((int)1/lambda);
+
+    for (int j = 0; j < proc.getBursts(); j++) {
+      r = drand48();
+      double rNext = drand48();
+      x = -log( r ) / lambda;
+      proc.addCPUTime((int)ceil(x));
+
+      if(j != proc.getBursts()-1) {
+        x = -log( rNext ) / lambda;
+	     proc.addIOTime(ceil(rNext));
+      }
+    }
+
+    processes.push_back(proc);
+ }
+
+    std::ofstream outputFile("simout.txt");
+
+    FCFS (numProcesses,processes,tCS,outputFile);
+    RR (numProcesses,processes,tCS,timeSlice,rrAdd,outputFile);
+    sjf(alpha, processes, tCS);
+    outputFile.close();
+
+
+
+  return EXIT_SUCCESS;
+}
 /*
   if (typeid(argv[1]).name() == "int") {
     seed = atoi(argv[1]);
@@ -391,83 +457,11 @@ int main(int argc, char* argv[]) {
   }
 */
 
+
+
     /*
     ????
     After you simulate each scheduling algorithm, you must reset the simulation back to the initial
     set of processes and set your elapsed time back to zero. More specifically, you must re-seed your
     random number generator to ensure the same set of processes and interarrival times.
     */
-
-  seed = atoi(argv[1]);
-  lambda = atof(argv[2]);
-  max = atof(argv[3]);
-  numProcesses = atoi(argv[4]);
-  tCS = atoi(argv[5]);
-  alpha  = atoi(argv[6]);
-  timeSlice = atof(argv[7]);
-  rrAdd = atoi(argv[8]);
-
-  #ifdef DEBUGMODE
-  //std::cout << "numprocs: " << numProcesses << std::endl;
-  #endif
-
-  std::vector<process> processes;
-  std::string alphabetLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  //do interarrival times
-  srand48( seed );
-
-  for ( int i = 0 ; i < numProcesses ; i++ ) {
-
-    process proc;
-
-    double r = drand48();   /* uniform dist [0.00,1.00) -- also check out random() */
-    double x = -log( r ) / lambda;  /* log() is natural log */
-
-    /* avoid values that are far down the "long tail" of the distribution */
-    if ( x > max ) { i--; continue; }
-
-    //set letters to correspond with proc ID
-    proc.setLet(alphabetLetters.at(i));
-
-    proc.setArrTime(floor(x));
-    
-    r = drand48();
-    int bursts = (r*100)+1;
-    std::cout << "Bursts: " << bursts << std::endl;
-    proc.setNumBursts(bursts);   
-
-    proc.setInitialTau((int)1/lambda);
-
-    for (int j = 0; j < proc.getBursts(); j++) {
-      r = drand48();
-      double rNext = drand48();
-      x = -log( r ) / lambda;
-      proc.addCPUTime((int)ceil(x));
-      #ifdef DEBUGMODE
-      //std::cout << "first time is: " << proc.getCPUTime() << std::endl;
-      //std::cout << "Added time: " << r << std::endl;
-      #endif
-      if(j != proc.getBursts()-1) {
-        x = -log( rNext ) / lambda;
-	proc.addIOTime(ceil(rNext));
-      }
-    }
-
-    processes.push_back(proc);
- }
-
- #ifdef DEBUGMODE
- std::cout << "There are x processes: " << processes.size() << std::endl;
- #endif
-
-    std::ofstream outputFile("simout.txt");
-
-    //FCFS (numProcesses,processes,tCS,outputFile);
-    sjf(alpha, processes, tCS);
-    //RR (numProcesses,processes,tCS,timeSlice,rrAdd,outputFile);
-    outputFile.close();
-
-
-
-  return EXIT_SUCCESS;
-}
