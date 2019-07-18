@@ -6,7 +6,8 @@
 class process {
 	private:
         char letter;
-        int arrTime;
+	int tau;
+	int arrTime;
         int numBursts;
 	int waitTime;
 	int turnAroundTime;
@@ -17,21 +18,16 @@ class process {
 	int cpuFinTime;
 	int ioFinTime;
 
-
-	void setLet(char newLet);
-	void setArrTime(int newArrTime);
-	void setNumBursts(int newBursts);
-	void setCPUTime(int newCPUTime);
-	void setIOTime(int newIOTime);
-
 	public:
 	//constructors
 	process();
 	process(char let, int arr, int bursts, int cTime, int iTime);
 	process(const process &p2);
+	process(const int finTime); //dummy constructor ONLY FOR WAITING ON CONTEXT SWITCH
 
 	//operators
-	bool operator< (const process& p);
+	bool operator<  (const process& p); //compares next burst time
+	bool operator== (const process& p); //returns true if the processes have the same letter
 
 	//gets
 	char getLet() const;
@@ -42,12 +38,28 @@ class process {
 	std::string getState() const;
 	int getCPUFinTime() const;
 	int getIOFinTime() const;
+	int getTau() const;
 	//sets
 	void setCPUTimes(std::vector<int> burstTimes);
+	void insertCPUTime(int newTime);
 	void addCPUTime(int newTime);
+	void addIOTime(int newTime);
 	void setState(std::string newState); //should be "ready", "running", or "blocking"
-	void setCPUFinTime(int newTime);
-	void setIOFinTime(int newTime);
+	void setCPUFinTime(int currentTime);
+	void setInitialTau(int tau);
+	void setNewTau(double alpha, int t);
+	void setIOFinTime(int currentTime);
+
+	void setLet(char newLet);
+	void setArrTime(int newArrTime);
+	void setNumBursts(int newBursts);
+	void setCPUTime(int newCPUTime);
+	void setIOTime(int newIOTime);
+
+
+
 };
+
+bool letSort(const process& p1, const process& p2);
 
 #endif
