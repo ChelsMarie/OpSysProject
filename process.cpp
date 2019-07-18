@@ -10,6 +10,8 @@ process::process(char let, int arr, int bursts, int cTime, int iTime){
 	setLet(let);
 	setArrTime(arr);
 	setNumBursts(bursts);
+	waitTime = 0;
+	turnAroundTime = 0;
 	//setIOTime(iTime);
 	//setCPUTime(cTime);
 	setState("ready");
@@ -81,10 +83,24 @@ int process::getIOFinTime() const{
 	return(this -> ioFinTime);
 }
 
+std::chrono::high_resolution_clock::time_point process::getTurnaroundTime() const {
+	return (this -> turnAroundTime);
+}
+std::chrono::high_resolution_clock::time_point process::getWaitTime() const {
+	return (this -> waitTime);
+}
+
 //sets
 void process::setState(std::string newState) {
-	this -> state == newState;
+	this -> state = newState;
 } 
+
+void process::setturnAroundTime(std::chrono::high_resolution_clock::time_point newTime) {
+	this -> turnAroundTime = newTime;
+}
+void process::setwaitTime(std::chrono::high_resolution_clock::time_point newTime) {
+	this -> waitTime = newTime;
+}
 
 void process::setLet(char newLet) {
 	this -> letter = newLet;
@@ -109,6 +125,10 @@ void process::removeCPUTime() {
 	cpuTimes.erase(cpuTimes.begin());
 }
 
+void process::removeIOTime() {
+	ioTimes.erase(ioTimes.begin());
+}
+
 void process::addIOTime(int newTime) {
 	this -> ioTimes.push_back(newTime);
 }
@@ -119,6 +139,15 @@ void process::setCPUFinTime(int newTime) {
 void process::setIOFinTime(int newTime) {
 	this -> ioFinTime = newTime;
 }
+
+void setturnAroundTime(std::chrono::high_resolution_clock::time_point newTime) {
+	this -> turnAroundTime = newTime;
+}
+
+void setwaitTime(std::chrono::high_resolution_clock::time_point newTime) {
+	this -> waitTime = newTime;
+}
+
 /*
 void process::setCPUTime(int newCPUTime) {
 	this -> cpuTime = newCPUTime;

@@ -1,5 +1,6 @@
 #include <vector>
 #include <algorithm>
+#include <chrono>
 
 #ifndef PROCESS_H
 #define PROCESS_H
@@ -9,8 +10,8 @@ class process {
     char letter;
     int arrTime;
     int numBursts;
-	int waitTime;
-	int turnAroundTime;
+	std::chrono::high_resolution_clock::time_point waitTime;
+	std::chrono::high_resolution_clock::time_point turnAroundTime;
     std::vector<int> cpuTimes;
     std::vector<int> ioTimes;
 	std::string state; //should be "ready", "running", or "blocked"
@@ -43,10 +44,15 @@ class process {
 	std::string getState() const;
 	int getCPUFinTime() const;
 	int getIOFinTime() const;
+	std::chrono::high_resolution_clock::time_point getTurnaroundTime() const;
+	std::chrono::high_resolution_clock::time_point getWaitTime() const; 
 	//sets
 	void setCPUTimes(std::vector<int> burstTimes);
+	void setturnAroundTime(std::chrono::high_resolution_clock::time_point newTime);
+	void setwaitTime(std::chrono::high_resolution_clock::time_point newTime);
 	void addCPUTime(int newTime);
 	void removeCPUTime();
+	void removeIOTime()
 	void addIOTime(int newTime);
 	void setState(std::string newState); //should be "ready", "running", or "blocking"
 	void setCPUFinTime(int newTime);

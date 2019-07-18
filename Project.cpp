@@ -38,12 +38,72 @@ bool sortProcesses() (const process& p1, const process& p2) {
   }
 }
 
-void FCFS(int numProc, std::vector<process> procs) {
+void addToRunningQueue(std::vector<process> q, std::vector<process> qReady) {
+    if (q.size() == 0) {
+        q.push_back(qReady[0]);
+        qReady.erase(qReady[0]);
+        t = high_resolution_clock::now();
+        q[i].setCPUFinTime(t+q[i].getCPUTime());
+        std::cout << "time " << t << "ms: Process " << q[0].getLet() << " started using the CPU for " << q[i].getCPUTime() << "ms burst [Q " << printQueue(qReady) >> "]" << std::endl;
+        q[0].setState("running");
+  }
+  else {
+    continue;
+  }
+}
 
- std::vector<process> queueBlocked;
+void checkCPUFinish(std::vector<process> q, std::vector<process> qReady) {
+    t = high_resolution_clock::now();     
+    if (q[0].getCPUFinTime() == t) {
+          q[0].removeCPUTime();
+          t = high_resolution_clock::now();   
+          std::cout << "time " << t << " << ms: Process " << q[i].getLet() << " completed a CPU burst; " << q[i].getBursts() << " bursts to go [Q " << printQueue(qReady) << "]" << std::endl;
+    }
+    else {
+        continue;
+    }
+}
+
+//check to see if the process has any more CPU bursts and if not it's completely done
+//if it does, add it to the blocked queue
+void checkBurstsLeft(std::vector<process> q, std::vector<process> qReady, std::vector<process> qBlocked) {
+    if (q[0].getBursts() != 0) {
+        t = high_resolution_clock::now();   
+        q[0].setIOFinTime(t+q[0].getIOTime());
+        q[0].setState("blocked");
+        qBlocked.push_back(q.pop());
+        t = high_resolution_clock::now();   
+        std::cout << "time " << t << "ms: Process " << qBlocked[0].getLet() << " switching out of CPU; will block on I/O until time " << qBlocked.getIOTime() << "ms [Q " << printQueue(qReady) << "]" << std::endl;
+    }
+
+    else {
+        t = high_resolution_clock::now();   
+        std::endl << "time " << t << "ms: Process " << q[0].getLet() << " terminated [Q " << printQueue(qReady) << "]" std::endl;
+        queueDone.push_back(q.pop());
+    }
+}
+
+void checkIOFinish(std::vector<process> q, std::vector<process> qReady, std::vector<process> qBlocked) {
+    if (q[0].getIOFinTime() == t) {
+        q[0].removeIOTime();
+        q[0].setState("ready");
+        q.push_back(qBlocked.pop());
+        t = high_resolution_clock::now();   
+        std::cout << "time " << t << "ms: Process " << q[0].getLet() << " completed I/O; added to ready queue [Q " << printQueue(qReady) << "]" << std::endl;
+    }
+
+    else {
+        continue;
+    }
+}
+
+void RR(int numProc,std::vector<process> procs, int timeContextSwitch, int timeslice, std::string position) {
+     std::vector<process> queueBlocked;
  std::vector<process> queueReady;
  std::vector<process> queueRunning;
  std::vector<process> queueDone; //when all cpu bursts are done, process goes here
+
+std::sort(procs.begin(),procs.end(),sortProcesses);
 
 //preliminarily print all procs and their arrival times and CPU burst
  for (int i = 0; i < numProc; i++) {
@@ -51,7 +111,8 @@ void FCFS(int numProc, std::vector<process> procs) {
  }
 
 
-chrono::high_resolution_clock::time_point t = 0;
+std::chrono::high_resolution_clock::time_point t = 0;
+
 std::cout << "time 0ms: Simulator started for FCFS [Q " << printQueue(queueReady) << "]" << std::endl;
 
 //prelim adding to readyqueue and showing cpu startburst
@@ -62,37 +123,76 @@ for  (int i = 0; i < procs.size(); i++) {
     procs[i].setState("ready");
     std::cout << "time " << t << "ms: Process " << procs[i].getLet() << " arrived; added to ready queue [Q" << printQueue(queueReady) << "]" << std::endl;
   }
-  if (queueRunning.size() == 0) {
-    queueRunning.push_back(queueReady.pop());
-     t = high_resolution_clock::now();
-     procs[i].setCPUFinTime(t+procs[i].getCPUTime());
-    std::cout << "time " << t << "ms: Process " << procs[i].getLet() << " started using the CPU for " << procs[i].getCPUTime() << "ms burst [Q " << printQueue(queueReady) >> "]" << std::endl;
-  }
+    addToRunningQueue(queueRunning,queueReady);
 }
 
-while (queueDone.size()!= numProcesses) {
-  for (int i = 0; i < queueRunning.size(); i++) {
-     t = high_resolution_clock::now();   
+while (queueDone.size() != numProcesses) {
+        t = high_resolution_clock::now();   
 
-    if (queueRunning[i].getCPUFinTime() == t) {
-      queueRunning[i].removeCPUTime();
-      std::cout << "time " << t << " << ms: Process " << queueRunning[i].getLet() << " completed a CPU burst; " << queueRunning[i].getBursts() << " bursts to go [Q " << printQueue(queueReady) << "]" << std::endl;
-      
-      if (queueRunning[i].getBursts() != 0) {
-        queueBlocked.push_back(queueRunning.pop());
-      }
-      else {
-        queueDone.push_back(queueRunning.pop());
-      }
-    }
-  }
+        addToRunningQueue(queueRunning,queueReady);
+        checkCPUFinish(queueRunning,queueReady);
+        checkIOFinish(queueRunning,queueReady,queueBlocked);
+        checkBurstsLeft(queueRunning,queueReady,queueBlocked);
 
-  for (int i = 0; i < queueReady.size(); i++) {
+        if (queueDone.size() == numProcesses) {
+            break;
+        }
+} //end of while
 
-  }
-}
+    t = high_resolution_clock::now();   
+    std::cout << "time " << t << "ms: Simulator ended for FCFS [Q " << printQueue(queueReady) << "]" << std::endl;
+
 
 }
+
+void FCFS(int numProc, std::vector<process> procs, int tCS) {
+
+ std::vector<process> queueBlocked;
+ std::vector<process> queueReady;
+ std::vector<process> queueRunning;
+ std::vector<process> queueDone; //when all cpu bursts are done, process goes here
+
+std::sort(procs.begin(),procs.end(),sortProcesses);
+
+//preliminarily print all procs and their arrival times and CPU burst
+ for (int i = 0; i < numProc; i++) {
+  std::out << "Process " << procs[i].getLet() << "[NEW] (arrival time " << procs[i].getArr() << " ms) " << procs[i].getBursts() << " CPU bursts" << std::endl;
+ }
+
+
+std::chrono::high_resolution_clock::time_point t = 0;
+
+std::cout << "time 0ms: Simulator started for FCFS [Q " << printQueue(queueReady) << "]" << std::endl;
+
+//prelim adding to readyqueue and showing cpu startburst
+for  (int i = 0; i < procs.size(); i++) {
+  t = high_resolution_clock::now();
+  if (t == procs[i].arrTime())  {
+    queueReady.push_back(procs[i]);
+    procs[i].setState("ready");
+    std::cout << "time " << t << "ms: Process " << procs[i].getLet() << " arrived; added to ready queue [Q" << printQueue(queueReady) << "]" << std::endl;
+  }
+    addToRunningQueue(queueRunning,queueReady);
+}
+
+while (queueDone.size() != numProcesses) {
+        t = high_resolution_clock::now();   
+
+        addToRunningQueue(queueRunning,queueReady);
+        checkCPUFinish(queueRunning,queueReady);
+        checkIOFinish(queueRunning,queueReady,queueBlocked);
+        checkBurstsLeft(queueRunning,queueReady,queueBlocked);
+
+        if (queueDone.size() == numProcesses) {
+            break;
+        }
+} //end of while
+
+    t = high_resolution_clock::now();   
+    std::cout << "time " << t << "ms: Simulator ended for FCFS [Q " << printQueue(queueReady) << "]" << std::endl;
+
+
+} //end of FCFS
 
 int main(int argc, char* argv[]) {
 
@@ -113,7 +213,7 @@ int main(int argc, char* argv[]) {
   double timeSlice; //argv[7]
   std::string rrAdd = "END"; //argv[8]
 
-    if (typeid(argv[1]).name() == "int") {
+  if (typeid(argv[1]).name() == "int") {
     seed = atoi(argv[1]);
   }
   else {
@@ -142,28 +242,28 @@ int main(int argc, char* argv[]) {
   }
 
   if (typeid(argv[5]).name() == "int") {
-    numProcesses = atoi(argv[5])
+    tCS = atoi(argv[5])
   }
   else {
     std::cerr << "ERROR: ARGV[5] is not an int" << std::endl;       
   }
 
   if (typeid(argv[6]).name() == "int") {
-    numProcesses = atoi(argv[6])
+    alpha = atoi(argv[6])
   }
   else {
     std::cerr << "ERROR: ARGV[6] is not a double" << std::endl;       
   }
 
   if (typeid(argv[7]).name() == "double") {
-    numProcesses = atof(argv[7])
+    timeSlice = atof(argv[7])
   }
   else {
     std::cerr << "ERROR: ARGV[7] is not a double" << std::endl;       
   }
 
   if (typeid(argv[8]).name() == "string") {
-    numProcesses = atoi(argv[8])
+    rrAdd = atoi(argv[8])
   }
   else {
     std::cerr << "ERROR: ARGV[8] is not a string" << std::endl;       
@@ -209,6 +309,9 @@ int main(int argc, char* argv[]) {
 
   double avg = sum / numProcesses;
 
+
+FCFS (numProcesses,processes,tCS);
+RR (numProcesses,processes, tCS, timeSlice, rrAdd);
 
 ofstream outFile("simout.txt");
 outFIle.close();
