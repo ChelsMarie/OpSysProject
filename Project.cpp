@@ -17,7 +17,7 @@ using namespace std;
 
 //print ready queue
 void printQueue (std::vector<process> queue) {
-  for (int i = 0; i < queue.size(); i++) {
+  for (uint i = 0; i < queue.size(); i++) {
     std::cout << " " << queue[i].getLet();
   }
 }
@@ -58,7 +58,7 @@ void preemptionCheck(std::vector<process> q, std::vector<process> qReady, int cS
 
         if (placement == "beginning") {
             qReadyPushFront.push_back(q[0]);
-            for(int i = 0; i < qReady.size(); i++) {
+            for(uint i = 0; i < qReady.size(); i++) {
                 qReadyPushFront.push_back(qReady[i]); //push back elements of qReady to qReadyPushFront
             }
             qReady = qReadyPushFront; //set qReady = to new vector with element at beginning
