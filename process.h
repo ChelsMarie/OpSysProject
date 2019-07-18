@@ -12,7 +12,7 @@ class process {
 
     char letter;
     int arrTime;
-    int numBursts;;
+    int numBursts;
 	int waitTime;
 	int turnAroundTime;
     std::vector<int> cpuTimes;
