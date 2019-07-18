@@ -1,13 +1,17 @@
 #include <string>
+#include <algorithm>
 #include "process.h"
 
 //constructors
 process::process() {}
 
 process::process(char let, int arr, int bursts, int cTime, int iTime){
+	numBursts = cpuTimes.size();
 	setLet(let);
 	setArrTime(arr);
 	setNumBursts(bursts);
+	waitTime = 0;
+	turnAroundTime = 0;
 	//setIOTime(iTime);
 	//setCPUTime(cTime);
 	setState("ready");
@@ -37,6 +41,8 @@ process::process(const process &p2){
 
 }
 
+
+
 //operators/compare functions
 
 //compares the next cpu times for each process
@@ -62,7 +68,7 @@ int process::getArr() const{
 }
 
 int process::getBursts() const{
-	return(this -> numBursts);
+	return(this -> cpuTimes.size());
 }
 
 int process::getCPUTime() const{
@@ -87,6 +93,15 @@ int process::getIOFinTime() const{
 
 int process::getTau() const {
 	return(this -> tau);
+
+std::chrono::high_resolution_clock::time_point process::getTurnaroundTime() const {
+	return (this -> turnAroundTime);
+}
+std::chrono::high_resolution_clock::time_point process::getBeginWait() const {
+	return (this -> beginWait);
+}
+std::chrono::high_resolution_clock::time_point process::getEndWait() const {
+	return (this -> endWait);
 }
 
 //sets
@@ -94,6 +109,15 @@ void process::setState(std::string newState) {
 	this -> state = newState;
 } 
 
+void process::setturnAroundTime(std::chrono::high_resolution_clock::time_point newTime) {
+	this -> turnAroundTime = newTime;
+}
+void process::setBeginWait(std::chrono::high_resolution_clock::time_point newTime) {
+	this -> waitTime = newTime;
+}
+void process::setEndWait(std::chrono::high_resolution_clock::time_point newTime) {
+	this -> waitTime = newTime;
+}
 void process::setLet(char newLet) {
 	this -> letter = newLet;
 }
@@ -128,6 +152,20 @@ increment numBursts because this should only happen when a process is preempted,
 void process::insertCPUTime(int newTime) { 
 	this -> cpuTimes.insert(cpuTimes.begin(), newTime);
 	numBursts++; 
+
+void process::removeCPUTime() {
+	cpuTimes.erase(cpuTimes.begin());
+}
+
+void process::removeIOTime() {
+	ioTimes.erase(ioTimes.begin());
+}
+
+void process::addIOTime(int newTime) {
+	this -> ioTimes.push_back(newTime);
+}
+void process::setCPUFinTime(int newTime) {
+	this -> cpuFinTime = newTime;
 }
 
 void process::setCPUFinTime(int currentTime) {
@@ -154,6 +192,23 @@ void process::setNewTau(double alpha, int t) {
 	this -> tau = newTau;
 }
 
+void setturnAroundTime(std::chrono::high_resolution_clock::time_point newTime) {
+	this -> turnAroundTime = newTime;
+}
+
+void setwaitTime(std::chrono::high_resolution_clock::time_point newTime) {
+	this -> waitTime = newTime;
+}
+
+void process::addWaitTime(int newTime) {
+	waitTimes.push_back(newTime);
+}
+
+void process::waitTimeTotalCalc() {
+	for(int i = 0; i < waitTimes.size()) {
+		waitTimeTotal += waitTimes[i];
+	}
+}
 /*
 void process::setCPUTime(int newCPUTime) {
 	this -> cpuTime = newCPUTime;
