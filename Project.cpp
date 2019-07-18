@@ -57,13 +57,14 @@ void addToRunningQueue(std::vector<process> q, std::vector<process> qReady) {
   }
 }
 
-void checkCPUFinish(std::vector<process> q, std::vector<process> qReady) {
+void checkCPUFinish(std::vector<process> q, std::vector<process> qReady, int cS) {
     t = high_resolution_clock::now();     
 
     if (q[0].getCPUFinTime() == t) {
           q[0].removeCPUTime();
           t = high_resolution_clock::now();   
           std::cout << "time " << std::chrono::duration_cast<chrono::milliseconds> t << " << ms: Process " << q[i].getLet() << " completed a CPU burst; " << q[i].getBursts() << " bursts to go [Q " << printQueue(qReady) << "]" << std::endl;
+          numContextSwitche++;
     }
     else {
         continue;
@@ -107,66 +108,21 @@ void checkIOFinish(std::vector<process> q, std::vector<process> qReady, std::vec
     }
 }
 
-void RR(int numProc,std::vector<process> procs, int timeContextSwitch, int timeslice, std::string position) {
+void RR(int numProc,std::vector<process> procs, int timeContextSwitch, int timeslice, std::string position, ofstream &outfile) {
 
-std::vector<process> queueBlocked;
- std::vector<process> queueReady;
- std::vector<process> queueRunning;
- std::vector<process> queueDone; //when all cpu bursts are done, process goes here
-
-std::sort(procs.begin(),procs.end(),sortProcesses);
-
-//preliminarily print all procs and their arrival times and CPU burst
- for (int i = 0; i < numProc; i++) {
-  std::out << "Process " << procs[i].getLet() << "[NEW] (arrival time " << procs[i].getArr() << " ms) " << procs[i].getBursts() << " CPU bursts" << std::endl;
- }
-
-
-std::chrono::high_resolution_clock::time_point t = 0;
-
-std::cout << "time 0ms: Simulator started for FCFS [Q " << printQueue(queueReady) << "]" << std::endl;
-
-//prelim adding to readyqueue and showing cpu startburst
-for  (int i = 0; i < procs.size(); i++) {
-  t = high_resolution_clock::now();
-  if (t == procs[i].arrTime())  {
-    queueReady.push_back(procs[i]);
-    procs[i].setState("ready");
-    std::cout << "time " << std::chrono::duration_cast<chrono::milliseconds> t << "ms: Process " << procs[i].getLet() << " arrived; added to ready queue [Q" << printQueue(queueReady) << "]" << std::endl;
-  }
-    addToRunningQueue(queueRunning,queueReady);
-}
-
-while (queueDone.size() != numProcesses) {
-        t = high_resolution_clock::now();   
-
-        addToRunningQueue(queueRunning,queueReady);
-        checkCPUFinish(queueRunning,queueReady);
-        checkIOFinish(queueRunning,queueReady,queueBlocked);
-        checkBurstsLeft(queueRunning,queueReady,queueBlocked);
-
-        if (queueDone.size() == numProcesses) {
-            break;
-        }
-} //end of while
-
-    t = high_resolution_clock::now();   
-    std::cout << "time " << std::chrono::duration_cast<chrono::milliseconds> t << "ms: Simulator ended for RR [Q " << printQueue(queueReady) << "]" << std::endl;
-
-
-}
-
-void FCFS(int numProc, std::vector<process> procs, int tCS) {
 
  std::vector<process> queueBlocked;
  std::vector<process> queueReady;
  std::vector<process> queueRunning;
  std::vector<process> queueDone; //when all cpu bursts are done, process goes here
+ std::vector<int> CPUTimes;
+ int numContextSwitches = 0;
 
 std::sort(procs.begin(),procs.end(),sortProcesses);
 
 //preliminarily print all procs and their arrival times and CPU burst
  for (int i = 0; i < numProc; i++) {
+   CPUTimes = procs[i].getAllCPUTimes();
   std::out << "Process " << procs[i].getLet() << "[NEW] (arrival time " << procs[i].getArr() << " ms) " << procs[i].getBursts() << " CPU bursts" << std::endl;
  }
 
@@ -194,7 +150,7 @@ while (queueDone.size() != numProcesses) {
         t = high_resolution_clock::now();   
 
         addToRunningQueue(queueRunning,queueReady);
-        checkCPUFinish(queueRunning,queueReady);
+        checkCPUFinish(queueRunning,queueReady,numContextSwitches);
         checkIOFinish(queueRunning,queueReady,queueBlocked);
         checkBurstsLeft(queueRunning,queueReady,queueBlocked);
 
@@ -203,9 +159,121 @@ while (queueDone.size() != numProcesses) {
         }
 } //end of while
 
-    t = high_resolution_clock::now();   
-    std::cout << "time " <<  std::chrono::duration_cast<chrono::milliseconds> t << "ms: Simulator ended for FCFS [Q " << printQueue(queueReady) << "]" << std::endl;
 
+
+t = high_resolution_clock::now();   
+std::cout << "time " <<  std::chrono::duration_cast<chrono::milliseconds> t << "ms: Simulator ended for FCFS [Q " << printQueue(queueReady) << "]" << std::endl;
+
+
+
+ int totalCPUTimes;   
+ std::chrono::high_resolution_clock::time_point totalWaitTimes; 
+//calculate wait time total
+for (int i = 0; i < numProcesses; i++) {
+    totalWaitTimes = procs[i].waitTimeTotalCalc();
+    totalCPUTimes += CPUTimes[i];
+}
+
+ double avgCPUBurstTime = (double)totalCPUTimes / (double)numProc;
+ double avgWaitTime = (double)totalWaitTimes / (double)numProc;
+ double avgTurnaroundTime = ((double)totalWaitTimes + (double)totalCPUTimes + (double)tCS) / (double)numProc; 
+
+//-- average CPU burst time: #.### ms
+//-- average wait time: #.### ms
+//-- average turnaround time: #.### ms
+//-- total number of context switches: #
+//-- total number of preemptions: #
+
+outfile << "Algorithm FCFS\n";
+outfile << "-- average CPU burst time: " << avgCPUBurstTime << " ms\n";;
+outfile << "-- average wait time: " << avgWaitTime << " ms\n";
+outfile << "-- average turnaround time: " << avgTurnaroundTime << " ms\n";
+outfile << "-- total number of context switches: " << numContextSwitches << "\n";
+outfile << "-- total number of preemptions: 0\n";
+
+}
+
+void FCFS(int numProc, std::vector<process> procs, int tCS, ofstream& outfile) {
+
+ std::vector<process> queueBlocked;
+ std::vector<process> queueReady;
+ std::vector<process> queueRunning;
+ std::vector<process> queueDone; //when all cpu bursts are done, process goes here
+ std::vector<int> CPUTimes;
+ int numContextSwitches = 0;
+
+std::sort(procs.begin(),procs.end(),sortProcesses);
+
+//preliminarily print all procs and their arrival times and CPU burst
+ for (int i = 0; i < numProc; i++) {
+   CPUTimes = procs[i].getAllCPUTimes();
+  std::out << "Process " << procs[i].getLet() << "[NEW] (arrival time " << procs[i].getArr() << " ms) " << procs[i].getBursts() << " CPU bursts" << std::endl;
+ }
+
+
+std::chrono::high_resolution_clock::time_point t = 0;
+
+std::cout << "time 0ms: Simulator started for FCFS [Q " << printQueue(queueReady) << "]" << std::endl;
+
+//prelim adding to readyqueue and showing cpu start burst
+for  (int i = 0; i < procs.size(); i++) {
+  t = high_resolution_clock::now();
+  if (t == procs[i].arrTime())  {
+    queueReady.push_back(procs[i]);
+    
+    //begin to measure wait time here
+    procs[i].setBeginWait = high_resolution_clock::now();
+
+    procs[i].setState("ready");
+    std::cout << "time " << std::chrono::duration_cast<chrono::milliseconds> t << "ms: Process " << procs[i].getLet() << " arrived; added to ready queue [Q" << printQueue(queueReady) << "]" << std::endl;
+  }
+    addToRunningQueue(queueRunning,queueReady);
+}
+
+while (queueDone.size() != numProcesses) {
+        t = high_resolution_clock::now();   
+
+        addToRunningQueue(queueRunning,queueReady);
+        checkCPUFinish(queueRunning,queueReady,numContextSwitches);
+        checkIOFinish(queueRunning,queueReady,queueBlocked);
+        checkBurstsLeft(queueRunning,queueReady,queueBlocked);
+
+        if (queueDone.size() == numProcesses) {
+            break;
+        }
+} //end of while
+
+
+
+t = high_resolution_clock::now();   
+std::cout << "time " <<  std::chrono::duration_cast<chrono::milliseconds> t << "ms: Simulator ended for FCFS [Q " << printQueue(queueReady) << "]" << std::endl;
+
+
+
+ int totalCPUTimes;   
+ std::chrono::high_resolution_clock::time_point totalWaitTimes; 
+//calculate wait time total
+for (int i = 0; i < numProcesses; i++) {
+    totalWaitTimes = procs[i].waitTimeTotalCalc();
+    totalCPUTimes += CPUTimes[i];
+}
+
+ double avgCPUBurstTime = (double)totalCPUTimes / (double)numProc;
+ double avgWaitTime = (double)totalWaitTimes / (double)numProc;
+ double avgTurnaroundTime = ((double)totalWaitTimes + (double)totalCPUTimes + (double)tCS) / (double)numProc; 
+
+//-- average CPU burst time: #.### ms
+//-- average wait time: #.### ms
+//-- average turnaround time: #.### ms
+//-- total number of context switches: #
+//-- total number of preemptions: #
+
+outfile << "Algorithm FCFS\n";
+outfile << "-- average CPU burst time: " << avgCPUBurstTime << " ms\n";;
+outfile << "-- average wait time: " << avgWaitTime << " ms\n";
+outfile << "-- average turnaround time: " << avgTurnaroundTime << " ms\n";
+outfile << "-- total number of context switches: " << numContextSwitches << "\n";
+outfile << "-- total number of preemptions: 0\n";
 
 } //end of FCFS
 
@@ -325,10 +393,10 @@ int main(int argc, char* argv[]) {
   double avg = sum / numProcesses;
 
 
-FCFS (numProcesses,processes,tCS);
-RR (numProcesses,processes, tCS, timeSlice, rrAdd);
+FCFS (numProcesses,processes,tCS,outputFile);
+RR (numProcesses,processes, tCS, timeSlice, rrAdd,outputFile);
 
-ofstream outFile("simout.txt");
+ofstream outputFile("simout.txt");
 outFIle.close();
 
 

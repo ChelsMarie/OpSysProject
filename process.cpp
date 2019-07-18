@@ -83,6 +83,10 @@ int process::getIOFinTime() const{
 	return(this -> ioFinTime);
 }
 
+std::vector<int> processs::getAllCPUTimes() {
+	return (this -> cpuTimes);
+}
+
 std::chrono::high_resolution_clock::time_point process::getTurnaroundTime() const {
 	return (this -> turnAroundTime);
 }
@@ -91,6 +95,13 @@ std::chrono::high_resolution_clock::time_point process::getBeginWait() const {
 }
 std::chrono::high_resolution_clock::time_point process::getEndWait() const {
 	return (this -> endWait);
+}
+
+std::chrono::high_resolution_clock::time_point process::waitTimeTotalCalc() const {
+	for(int i = 0; i < waitTimes.size(); i++) {
+		waitTimeTotal += waitTimes[i];
+	}
+	return waitTimeTotal;
 }
 
 //sets
@@ -157,11 +168,9 @@ void process::addWaitTime(int newTime) {
 	waitTimes.push_back(newTime);
 }
 
-void process::waitTimeTotalCalc() {
-	for(int i = 0; i < waitTimes.size()) {
-		waitTimeTotal += waitTimes[i];
-	}
-}
+
+
+
 /*
 void process::setCPUTime(int newCPUTime) {
 	this -> cpuTime = newCPUTime;

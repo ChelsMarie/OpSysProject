@@ -44,12 +44,14 @@ class process {
 	int getBursts() const;
 	int getCPUTime() const;
 	int getIOTime() const;
-	std::string getState() const;
+	std::string getState() const;\
+	std::vector<int> getAllCPUTimes();
 	int getCPUFinTime() const;
 	int getIOFinTime() const;
 	std::chrono::high_resolution_clock::time_point getTurnaroundTime() const;
 	std::chrono::high_resolution_clock::time_point getBeginWait() const; 
 	std::chrono::high_resolution_clock::time_point getEndWait() const; 
+	std::chrono::high_resolution_clock::time_point process::waitTimeTotalCalc() const 
 
 	//sets
 	void setCPUTimes(std::vector<int> burstTimes);
@@ -64,6 +66,7 @@ class process {
 	void setCPUFinTime(int newTime);
 	void setIOFinTime(int newTime);
 	void addWaitTime(int newTime);
+	void waitTimeTotalCalc();
 };
 
 #endif
