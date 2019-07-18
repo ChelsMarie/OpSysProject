@@ -390,6 +390,7 @@ int main(int argc, char* argv[]) {
     std::cerr << "ERROR: ARGV[8] is not a string" << std::endl;       
   }
 */
+
     /*
     ????
     After you simulate each scheduling algorithm, you must reset the simulation back to the initial
@@ -460,7 +461,6 @@ int main(int argc, char* argv[]) {
     //FCFS (numProcesses,processes,tCS,outputFile);
     sjf(alpha, processes, tCS);
     //RR (numProcesses,processes,tCS,timeSlice,rrAdd,outputFile);
-
     outputFile.close();
 
 
