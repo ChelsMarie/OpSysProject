@@ -12,16 +12,16 @@ class process {
 
     char letter;
     int arrTime;
-    int numBursts;;
-	int waitTime;
-	int turnAroundTime;
+    int numBursts;
+    int waitTime;
+    int turnAroundTime;
     std::vector<int> cpuTimes;
     std::vector<int> ioTimes;
-	std::string state; //should be "ready", "running", or "blocked"
-	//cpu and io timing variables
-	int cpuFinTime;
-	int ioFinTime;
-
+    std::string state; //should be "ready", "running", or "blocked"
+    //cpu and io timing variables
+    int cpuFinTime;
+    int ioFinTime;
+    int tau;
 
 	public:
 	//constructors
@@ -68,9 +68,11 @@ class process {
 	void setIOTime(int newIOTime);
 	void incrememntWaitTime();
 	void removeCPUTime();
+	void removeIOTime();
 
 };
 
 bool letSort(const process& p1, const process& p2);
 
 #endif
+

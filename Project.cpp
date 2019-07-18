@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <vector>
 #include <fstream>
+#include "shortestAlgos.h"
 
 using namespace std;
 
@@ -41,13 +42,46 @@ bool sortProcesses (const process& p1, const process& p2) {
   }
 }
 
+void preemptionCheck(std::vector<process> q, std::vector<process> qReady, int cS, int timeSlice, std::string placement,int numPreemptions, int t) {
+    numPreemptions++;
+
+    std::vector<process> qReadyPushFront;
+
+
+    if (q[0].getCPUFinTime() > t + timeSlice) {
+        if (qReady.size() != 0) {
+            cS++;
+        }
+
+        //increment waittime
+        qReady[0].incrememntWaitTime();
+
+        if (placement == "beginning") {
+            qReadyPushFront.push_back(q[0]);
+            for(int i = 0; i < qReady.size(); i++) {
+                qReadyPushFront.push_back(qReady[i]); //push back elements of qReady to qReadyPushFront
+            }
+            qReady = qReadyPushFront; //set qReady = to new vector with element at beginning
+        }
+
+        else {
+        qReady.push_back(q[0]);
+        }
+        q.clear();
+
+        std::cout << "time " << t << "ms: Time slice expired; process " << qReady[0].getLet() << " preempted with " << qReady[0].getCPUFinTime() << "ms to go [Q ";
+        printQueue(qReady);
+        std::cout << " ]" << std::endl;
+    }
+}
+
 void addToRunningQueue(std::vector<process> q, std::vector<process> qReady, int t) {
     if (q.size() == 0) {
         q.push_back(qReady[0]);
 
         qReady.erase(qReady.begin());
         q[0].setCPUFinTime(t + q[0].getCPUTime());
-        std::cout << "time " << t << "ms: Process " << q[0].getLet() << " started using the CPU for " << q[i].getCPUTime() << "ms burst [Q ";
+        std::cout << "time " << t << "ms: Process " << q[0].getLet() << " started using the CPU for " << q[0].getCPUTime() << "ms burst [Q ";
         printQueue(qReady);
         std::cout << "]" << std::endl;
 
@@ -59,58 +93,39 @@ void addToRunningQueue(std::vector<process> q, std::vector<process> qReady, int 
 void checkCPUFinish(std::vector<process> q, std::vector<process> qReady, int cS, int timeSlice, std::string placement, int numPreemptions, int t) {
     if (q[0].getCPUFinTime() == t) {
           q[0].removeCPUTime();
-          std::cout << "time " << t << " << ms: Process " << q[i].getLet() << " completed a CPU burst; " << q[0].getBursts() << " bursts to go [Q ";
+          std::cout << "time " << t << " << ms: Process " << q[0].getLet() << " completed a CPU burst; " << q[0].getBursts() << " bursts to go [Q ";
           printQueue(qReady);
           std::cout << "]" << std::endl;
-          
-          numContextSwitches++;
+          q.clear();
+          cS++;
     }
     else {
-        preemptionCheck(q,qReady,cS,timeSlice,placement,numPreemptions, int t);
+        preemptionCheck(q,qReady,cS,timeSlice,placement,numPreemptions,t);
     }
 }
 
-void preemptionCheck(std::vector<process> q, std::vector<process> qReady, int cS, int timeSlice, std::string placement,int numPreemptions, int t) {
-    numPreemptions++;
-    if (q[0].getCPUFinTime() > t + timeSlice) {
-        if (qReady.size() != 0) {
-            numContextSwitches++;
-        }
 
-        //increment waittime
-        qReady[0].incrememntWaitTime();
-
-        if (placement == "beginning") {
-            qReady.push_front(q[0].pop())
-        }
-        else {
-        qReady.push_back(q[0].pop());
-        }
-
-        std::cout << "time " << t << "ms: Time slice expired; process " << qReady[0].getLet() << " preempted with " << qReady[0].getCPUFinTime() << "ms to go [Q ";
-        printQueue(readyQueue);
-        std::cout << " ]" << std::endl;
-    }
-}
 
 //check to see if the process has any more CPU bursts and if not it's completely done
 //if it does, add it to the blocked queue
-void checkBurstsLeft(std::vector<process> q, std::vector<process> qReady, std::vector<process> qBlocked) {
+void checkBurstsLeft(std::vector<process> q, std::vector<process> qReady, std::vector<process> qBlocked, std::vector<process> qDone, int t) {
     if (q[0].getBursts() != 0) {
         q[0].setIOFinTime(t + q[0].getIOTime());
         q[0].setState("blocked");
-        qBlocked.push_back(q.pop());
-        std::cout << "time " << t << "ms: Process " << qBlocked[0].getLet() << " switching out of CPU; will block on I/O until time " << qBlocked.getIOTime() << "ms [Q ";
+        qBlocked.push_back(q[0]);
+        q.clear();
+        std::cout << "time " << t << "ms: Process " << qBlocked[0].getLet() << " switching out of CPU; will block on I/O until time " << qBlocked[0].getIOFinTime() << "ms [Q ";
         printQueue(qReady);
         std::cout << "]" << std::endl;
     }
 
     else {
-        std::endl << "time " << t << "ms: Process " << q[0].getLet() << " terminated [Q ";
+        std::cout << "time " << t << "ms: Process " << q[0].getLet() << " terminated [Q ";
         printQueue(qReady);
-        std::cout << "]" std::endl;
+        std::cout << "]" << std::endl;
 
-        queueDone.push_back(q.pop());
+        qDone.push_back(q[0]);
+        q.clear();
     }
 }
 
@@ -118,7 +133,8 @@ void checkIOFinish(std::vector<process> q, std::vector<process> qReady, std::vec
     if (q[0].getIOFinTime() == t) {
         q[0].removeIOTime();
         q[0].setState("ready");
-        qReady.push_back(qBlocked.pop());
+        qReady.push_back(qBlocked[0]);
+        q.clear();
 
         //increment waittime
         qReady[0].incrememntWaitTime();
@@ -128,7 +144,7 @@ void checkIOFinish(std::vector<process> q, std::vector<process> qReady, std::vec
         std::cout << "]" << std::endl;
     }
 
-
+}
 
 void RR(int numProc,std::vector<process> procs, int timeContextSwitch, int timeslice, std::string position, ofstream &outfile) {
 
@@ -141,7 +157,6 @@ int numContextSwitches = 0;
  std::vector<process> queueRunning;
  std::vector<process> queueDone; //when all cpu bursts are done, process goes here
  std::vector<int> CPUTimes;
- int numContextSwitches = 0;
 
 std::sort(procs.begin(),procs.end(),sortProcesses);
 
@@ -149,7 +164,7 @@ std::sort(procs.begin(),procs.end(),sortProcesses);
  for (int i = 0; i < numProc; i++) {
     totalBursts += procs[i].getBursts();
     CPUTimes = procs[i].getAllCPUTimes();
-    std::out << "Process " << procs[i].getLet() << "[NEW] (arrival time " << procs[i].getArr() << " ms) " << procs[i].getBursts() << " CPU bursts" << std::endl;
+    std::cout << "Process " << procs[i].getLet() << "[NEW] (arrival time " << procs[i].getArr() << " ms) " << procs[i].getBursts() << " CPU bursts" << std::endl;
  }
 
 
@@ -161,7 +176,7 @@ std::cout << "]" << std::endl;
 
 //prelim adding to readyqueue and showing cpu start burst
 for  (int i = 0; i < procs.size(); i++) {
-  if (t == procs[i].arrTime())  {
+  if (time == procs[i].getArr())  {
     queueReady.push_back(procs[i]);
     
     procs[i].setState("ready");
@@ -169,17 +184,17 @@ for  (int i = 0; i < procs.size(); i++) {
     printQueue(queueReady);
     std::cout << "]" << std::endl;
   }
-    addToRunningQueue(queueRunning,queueReady);
+    addToRunningQueue(queueRunning,queueReady,time);
 }
 
-while (queueDone.size() != numProcesses) {
+while (queueDone.size() != numProc) {
 
         addToRunningQueue(queueRunning,queueReady,time);
         checkCPUFinish(queueRunning,queueReady,numContextSwitches,0,"",0,time);
         checkIOFinish(queueRunning,queueReady,queueBlocked,time);
-        checkBurstsLeft(queueRunning,queueReady,queueBlocked,time);
+        checkBurstsLeft(queueRunning,queueReady,queueBlocked,queueDone,time);
 
-        if (queueDone.size() == numProcesses) {
+        if (queueDone.size() == numProc) {
             break;
         }
         time++;
@@ -187,7 +202,7 @@ while (queueDone.size() != numProcesses) {
 
 
 
-std::cout << "time " <<  t << "ms: Simulator ended for RR [Q ";
+std::cout << "time " <<  time << "ms: Simulator ended for RR [Q ";
 printQueue(queueReady);
 std:cout << "]" << std::endl;
 
@@ -196,14 +211,14 @@ std:cout << "]" << std::endl;
  int totalCPUTimes;   
  int totalWaitTimes; 
 //calculate wait time total
-for (int i = 0; i < numProcesses; i++) {
+for (int i = 0; i < numProc; i++) {
     totalWaitTimes = procs[i].getTotalWaitTime();
     totalCPUTimes += CPUTimes[i];
 }
 
  double avgCPUBurstTime = (double)totalCPUTimes / (double)totalBursts;
  double avgWaitTime = (double)totalWaitTimes / (double)totalBursts;
- double avgTurnaroundTime = ((double)totalWaitTimes + (double)totalCPUTimes + (double)tCS) / (double)totalBursts; 
+ double avgTurnaroundTime = ((double)totalWaitTimes + (double)totalCPUTimes + (double)numContextSwitches) / (double)totalBursts; 
 
 
 outfile << "Algorithm RR\n";
@@ -233,7 +248,7 @@ std::sort(procs.begin(),procs.end(),sortProcesses);
  for (int i = 0; i < numProc; i++) {
     totalBursts += procs[i].getBursts();
     CPUTimes = procs[i].getAllCPUTimes();
-    std::out << "Process " << procs[i].getLet() << "[NEW] (arrival time " << procs[i].getArr() << " ms) " << procs[i].getBursts() << " CPU bursts" << std::endl;
+    std::cout << "Process " << procs[i].getLet() << "[NEW] (arrival time " << procs[i].getArr() << " ms) " << procs[i].getBursts() << " CPU bursts" << std::endl;
  }
 
 int time = 0;
@@ -244,7 +259,7 @@ std::cout << "]" << std::endl;
 
 //prelim adding to readyqueue and showing cpu start burst
 for  (int i = 0; i < procs.size(); i++) {
-  if (t == procs[i].arrTime())  {
+  if (time == procs[i].getArr())  {
     queueReady.push_back(procs[i]);
     
     procs[i].setState("ready");
@@ -252,17 +267,17 @@ for  (int i = 0; i < procs.size(); i++) {
     printQueue(queueReady);
     std::cout << "]" << std::endl;
   }
-    addToRunningQueue(queueRunning,queueReady);
+    addToRunningQueue(queueRunning,queueReady,time);
 }
 
-while (queueDone.size() != numProcesses) {
+while (queueDone.size() != numProc) {
 
         addToRunningQueue(queueRunning,queueReady,time);
         checkCPUFinish(queueRunning,queueReady,numContextSwitches,0,"",0,time);
         checkIOFinish(queueRunning,queueReady,queueBlocked,time);
-        checkBurstsLeft(queueRunning,queueReady,queueBlocked,time);
+        checkBurstsLeft(queueRunning,queueReady,queueBlocked,queueDone,time);
 
-        if (queueDone.size() == numProcesses) {
+        if (queueDone.size() == numProc) {
             break;
         }
         time++;
@@ -270,7 +285,7 @@ while (queueDone.size() != numProcesses) {
 
 
 
-std::cout << "time " <<  t << "ms: Simulator ended for FCFS [Q ";
+std::cout << "time " <<  time << "ms: Simulator ended for FCFS [Q ";
 printQueue(queueReady);
 std::cout << "]" << std::endl;
 
@@ -279,13 +294,13 @@ int totalCPUTimes;
 int totalWaitTimes; 
 //calculate wait time total
 for (int i = 0; i < numProc; i++) {
-    totalWaitTimes = procs[i].waitTimeTotalCalc();
+    totalWaitTimes = procs[i].getTotalWaitTime();
     totalCPUTimes += CPUTimes[i];
 }
 
  double avgCPUBurstTime = (double)totalCPUTimes / (double)totalBursts;
  double avgWaitTime = (double)totalWaitTimes / (double)totalBursts;
- double avgTurnaroundTime = ((double)totalWaitTimes + (double)totalCPUTimes + (double)tCS) / (double)totalBursts; 
+ double avgTurnaroundTime = ((double)totalWaitTimes + (double)totalCPUTimes + (double)numContextSwitches) / (double)totalBursts; 
 
 
 
@@ -303,8 +318,9 @@ int main(int argc, char* argv[]) {
   setvbuf( stdout, NULL, _IONBF, 0 );
 
   //ERROR CHECING
-  if (argc != 9) {
-    std::cerr << "ERROR: You need 9 arguments." << std::endl;
+  if (argc != 8 && argc != 9) {
+    std::cerr << "ERROR: You need 8 or 9 arguments." << std::endl;
+    return(EXIT_FAILURE);
   }
 
 
@@ -317,6 +333,7 @@ int main(int argc, char* argv[]) {
   double timeSlice; //argv[7]
   std::string rrAdd = "END"; //argv[8]
 
+/*
   if (typeid(argv[1]).name() == "int") {
     seed = atoi(argv[1]);
   }
@@ -372,27 +389,37 @@ int main(int argc, char* argv[]) {
   else {
     std::cerr << "ERROR: ARGV[8] is not a string" << std::endl;       
   }
-
-/*
-????
-After you simulate each scheduling algorithm, you must reset the simulation back to the initial
-set of processes and set your elapsed time back to zero. More specifically, you must re-seed your
-random number generator to ensure the same set of processes and interarrival times.
 */
+    /*
+    ????
+    After you simulate each scheduling algorithm, you must reset the simulation back to the initial
+    set of processes and set your elapsed time back to zero. More specifically, you must re-seed your
+    random number generator to ensure the same set of processes and interarrival times.
+    */
+
+  seed = atoi(argv[1]);
+  lambda = atof(argv[2]);
+  max = atof(argv[3]);
+  numProcesses = atoi(argv[4]);
+  tCS = atoi(argv[5]);
+  alpha  = atoi(argv[6]);
+  timeSlice = atof(argv[7]);
+  rrAdd = atoi(argv[8]);
+
+  #ifdef DEBUGMODE
+  //std::cout << "numprocs: " << numProcesses << std::endl;
+  #endif
 
   std::vector<process> processes;
   std::string alphabetLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   //do interarrival times
-  srand48( time( NULL ) );
-  double sum;
+  srand48( seed );
 
-  for ( int i = 0 ; i < numProcesses ; i++ )
-  {
+  for ( int i = 0 ; i < numProcesses ; i++ ) {
 
     process proc;
 
     double r = drand48();   /* uniform dist [0.00,1.00) -- also check out random() */
-    double rNext = drand48();
     double x = -log( r ) / lambda;  /* log() is natural log */
 
     /* avoid values that are far down the "long tail" of the distribution */
@@ -401,31 +428,40 @@ random number generator to ensure the same set of processes and interarrival tim
     //set letters to correspond with proc ID
     proc.setLet(alphabetLetters.at(i));
 
-    if (i == 0) {
-      proc.setArrTime(floor(r));
-      proc.setNumBursts((r*100)+1);   
-    }
+    proc.setArrTime(floor(x));
+    
+    r = drand48();
+    int bursts = (r*100)+1;
+    std::cout << "Bursts: " << bursts << std::endl;
+    proc.setNumBursts(bursts);   
+
+    proc.setInitialTau((int)1/lambda);
 
     for (int j = 0; j < proc.getBursts(); j++) {
-      proc.addCPUTime(ceil(r));
-      proc.addIOTime(ceil(rNext));
+      r = drand48();
+      double rNext = drand48();
+      proc.addCPUTime((int)ceil(r));
+      #ifdef DEBUGMODE
+      //std::cout << "first time is: " << proc.getCPUTime() << std::endl;
+      //std::cout << "Added time: " << r << std::endl;
+      #endif
+      if(j != proc.getBursts()-1) proc.addIOTime(ceil(rNext));
     }
 
     processes.push_back(proc);
+ }
 
+ #ifdef DEBUGMODE
+ std::cout << "There are x processes: " << processes.size() << std::endl;
+ #endif
 
-    sum += x;
-    if ( i == 0 || x > max ) { max = x; }
-  }
+    std::ofstream outputFile("simout.txt");
 
-  double avg = sum / numProcesses;
+    //FCFS (numProcesses,processes,tCS,outputFile);
+    sjf(alpha, processes, tCS);
+    //RR (numProcesses,processes,tCS,timeSlice,rrAdd,outputFile);
 
-std::ofstream outputFile("simout.txt");
-
-FCFS (numProcesses,processes,tCS,outputFile);
-RR (numProcesses,processes,tCS,timeSlice,rrAdd,outputFile);
-
-outFile.close();
+    outputFile.close();
 
 
 

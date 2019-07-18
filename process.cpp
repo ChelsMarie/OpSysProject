@@ -70,7 +70,7 @@ int process::getArr() const{
 }
 
 int process::getBursts() const{
-	return(this -> cpuTimes.size());
+	return(this -> numBursts);
 }
 
 int process::getCPUTime() const{
@@ -93,21 +93,21 @@ int process::getIOFinTime() const{
 	return(this -> ioFinTime);
 }
 
-std::vector<int> processs::getAllCPUTimes() {
+std::vector<int> process::getAllCPUTimes() {
 	return (this -> cpuTimes);
+}
+
 int process::getTau() const {
 	return(this -> tau);
-
-std::chrono::high_resolution_clock::time_point process::getTurnaroundTime() const {
-	return (this -> turnAroundTime);
 }
+
 
 int process::getTurnaroundTime() const {
 	return (this -> turnAroundTime);
 }
 
-int getTotalWaitTime() const {
-	returm (this -> waitTime);
+int process::getTotalWaitTime() const {
+	return (this -> waitTime);
 }
 
 
@@ -116,9 +116,7 @@ void process::setState(std::string newState) {
 	this -> state = newState;
 } 
 
-void process::setturnAroundTime(int newTime) {
-	this -> turnAroundTime = newTime;
-}
+
 
 void process::setLet(char newLet) {
 	this -> letter = newLet;
@@ -143,10 +141,6 @@ void process::addCPUTime(int newTime) { //adds new time to the end of the proces
 	this -> cpuTimes.push_back(newTime);
 }
 
-void process::addIOTime(int newTime) { //adds new time to the end of the process
-	this -> ioTimes.push_back(newTime);
-}
-
 /*
 increment numBursts because this should only happen when a process is preempted, so the removed
  time needs to be re-added as time left
@@ -154,6 +148,7 @@ increment numBursts because this should only happen when a process is preempted,
 void process::insertCPUTime(int newTime) { 
 	this -> cpuTimes.insert(cpuTimes.begin(), newTime);
 	numBursts++; 
+}
 
 void process::removeCPUTime() {
 	cpuTimes.erase(cpuTimes.begin());
@@ -170,14 +165,7 @@ void process::setCPUFinTime(int newTime) {
 	this -> cpuFinTime = newTime;
 }
 
-void process::setCPUFinTime(int currentTime) {
-	//if(numBursts == 1) {
-	//	csTime/=2;
-	//}
-	this -> cpuFinTime = cpuTimes[0] + currentTime;
-	cpuTimes.erase(cpuTimes.begin());
-	numBursts--;	
-}
+
 
 void process::setIOFinTime(int currentTime) {
 	this -> ioFinTime = currentTime + ioTimes[0];
@@ -194,16 +182,8 @@ void process::setNewTau(double alpha, int t) {
 	this -> tau = newTau;
 }
 
-void process::setturnAroundTime(int newTime) {
-	this -> turnAroundTime = newTime;
-}
-
 void process::incrememntWaitTime() {
 	 this -> waitTime++;
-}
-
-void process::removeCPUTime() {
-	cpuTimes.pop();
 }
 
 
@@ -217,3 +197,4 @@ void process::setIOTime(int newIOTime) {
 	this -> ioTime = newIOTime;
 }
 */
+
