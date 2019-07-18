@@ -11,12 +11,13 @@
 #include <algorithm>
 #include <vector>
 #include <fstream>
+#include "shortestAlgos.h"
 
 using namespace std;
 
 //print ready queue
 void printQueue (std::vector<process> queue) {
-  for (int i = 0; i < queue.size(); i++) {
+  for (uint i = 0; i < queue.size(); i++) {
     std::cout << " " << queue[i].getLet();
   }
 }
@@ -57,7 +58,7 @@ void preemptionCheck(std::vector<process> q, std::vector<process> qReady, int cS
 
         if (placement == "beginning") {
             qReadyPushFront.push_back(q[0]);
-            for(int i = 0; i < qReady.size(); i++) {
+            for(uint i = 0; i < qReady.size(); i++) {
                 qReadyPushFront.push_back(qReady[i]); //push back elements of qReady to qReadyPushFront
             }
             qReady = qReadyPushFront; //set qReady = to new vector with element at beginning
@@ -317,8 +318,9 @@ int main(int argc, char* argv[]) {
   setvbuf( stdout, NULL, _IONBF, 0 );
 
   //ERROR CHECING
-  if (argc != 8 || argc != 9) {
+  if (argc != 8 && argc != 9) {
     std::cerr << "ERROR: You need 8 or 9 arguments." << std::endl;
+    return(EXIT_FAILURE);
   }
 
 
@@ -331,6 +333,7 @@ int main(int argc, char* argv[]) {
   double timeSlice; //argv[7]
   std::string rrAdd = "END"; //argv[8]
 
+/*
   if (typeid(argv[1]).name() == "int") {
     seed = atoi(argv[1]);
   }
@@ -386,6 +389,7 @@ int main(int argc, char* argv[]) {
   else {
     std::cerr << "ERROR: ARGV[8] is not a string" << std::endl;       
   }
+*/
 
     /*
     ????
@@ -394,18 +398,29 @@ int main(int argc, char* argv[]) {
     random number generator to ensure the same set of processes and interarrival times.
     */
 
+  seed = atoi(argv[1]);
+  lambda = atof(argv[2]);
+  max = atof(argv[3]);
+  numProcesses = atoi(argv[4]);
+  tCS = atoi(argv[5]);
+  alpha  = atoi(argv[6]);
+  timeSlice = atof(argv[7]);
+  rrAdd = atoi(argv[8]);
+
+  #ifdef DEBUGMODE
+  //std::cout << "numprocs: " << numProcesses << std::endl;
+  #endif
+
   std::vector<process> processes;
   std::string alphabetLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   //do interarrival times
-  srand48( time( NULL ) );
-  double sum;
+  srand48( seed );
 
   for ( int i = 0 ; i < numProcesses ; i++ ) {
 
     process proc;
 
     double r = drand48();   /* uniform dist [0.00,1.00) -- also check out random() */
-    double rNext = drand48();
     double x = -log( r ) / lambda;  /* log() is natural log */
 
     /* avoid values that are far down the "long tail" of the distribution */
@@ -414,30 +429,38 @@ int main(int argc, char* argv[]) {
     //set letters to correspond with proc ID
     proc.setLet(alphabetLetters.at(i));
 
-    if (i == 0) {
-      proc.setArrTime(floor(r));
-      proc.setNumBursts((r*100)+1);   
-    }
+    proc.setArrTime(floor(x));
+    
+    r = drand48();
+    int bursts = (r*100)+1;
+    std::cout << "Bursts: " << bursts << std::endl;
+    proc.setNumBursts(bursts);   
+
+    proc.setInitialTau((int)1/lambda);
 
     for (int j = 0; j < proc.getBursts(); j++) {
-      proc.addCPUTime(ceil(r));
-      proc.addIOTime(ceil(rNext));
+      r = drand48();
+      double rNext = drand48();
+      proc.addCPUTime((int)ceil(r));
+      #ifdef DEBUGMODE
+      //std::cout << "first time is: " << proc.getCPUTime() << std::endl;
+      //std::cout << "Added time: " << r << std::endl;
+      #endif
+      if(j != proc.getBursts()-1) proc.addIOTime(ceil(rNext));
     }
 
     processes.push_back(proc);
-
-
-    sum += x;
-    if ( i == 0 || x > max ) { max = x; }
  }
 
-    double avg = sum / numProcesses;
+ #ifdef DEBUGMODE
+ std::cout << "There are x processes: " << processes.size() << std::endl;
+ #endif
 
     std::ofstream outputFile("simout.txt");
 
-    FCFS (numProcesses,processes,tCS,outputFile);
-    RR (numProcesses,processes,tCS,timeSlice,rrAdd,outputFile);
-
+    //FCFS (numProcesses,processes,tCS,outputFile);
+    sjf(alpha, processes, tCS);
+    //RR (numProcesses,processes,tCS,timeSlice,rrAdd,outputFile);
     outputFile.close();
 
 

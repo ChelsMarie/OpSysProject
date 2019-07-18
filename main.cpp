@@ -31,10 +31,10 @@ void randomGen (int seed, double lambda, double max, process &p) {
 
     r = drand48();  
     x = -log( r ) / lambda; 
+    int burstTime = ceil(x);
 
     if ( x > max ) { i--; continue; }
     else {
-      int burstTime = ceil(x);
       if(i%2 != 0) {
         p.addCPUTime(burstTime);
       } else {

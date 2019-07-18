@@ -70,7 +70,7 @@ int process::getArr() const{
 }
 
 int process::getBursts() const{
-	return(this -> cpuTimes.size());
+	return(this -> numBursts);
 }
 
 int process::getCPUTime() const{
@@ -197,3 +197,4 @@ void process::setIOTime(int newIOTime) {
 	this -> ioTime = newIOTime;
 }
 */
+

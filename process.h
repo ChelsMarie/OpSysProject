@@ -15,13 +15,14 @@ class process {
     int numBursts;
 	int waitTime;
 	int turnAroundTime;
+
     std::vector<int> cpuTimes;
     std::vector<int> ioTimes;
-	std::string state; //should be "ready", "running", or "blocked"
-	//cpu and io timing variables
-	int cpuFinTime;
-	int ioFinTime;
-	int tau;
+    std::string state; //should be "ready", "running", or "blocked"
+    //cpu and io timing variables
+    int cpuFinTime;
+    int ioFinTime;
+    int tau;
 
 	public:
 	//constructors
@@ -75,3 +76,4 @@ class process {
 bool letSort(const process& p1, const process& p2);
 
 #endif
+
