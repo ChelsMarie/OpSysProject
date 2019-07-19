@@ -375,25 +375,32 @@ int main(int argc, char* argv[]) {
 
     for (int j = 0; j < proc.getBursts(); j++) {
       r = drand48();
-      double rNext = drand48();
       x = -log( r ) / lambda;
       proc.addCPUTime((int)ceil(x));
 
       if(j != proc.getBursts()-1) {
-        x = -log( rNext ) / lambda;
-	     proc.addIOTime(ceil(rNext));
+        r = drand48();
+        x = -log( r ) / lambda;
+	     proc.addIOTime(ceil(x));
       }
     }
 
+    proc.setLastTime(proc.getCPUTime());
     processes.push_back(proc);
  }
 
     std::ofstream outputFile("simout.txt");
-
-    FCFS (numProcesses,processes,tCS,outputFile);
-    RR (numProcesses,processes,tCS,timeSlice,rrAdd,outputFile);
     sjf(alpha, processes, tCS);
-    outputFile.close();
+    
+    std::cout << std::endl;
+    srt(alpha, processes, tCS);
+    
+    std::cout << std::endl;
+    FCFS (numProcesses,processes,tCS,outputFile);
+    
+    std::cout << std::endl;
+    RR (numProcesses,processes,tCS,timeSlice,rrAdd,outputFile);
+   outputFile.close();
 
 
 

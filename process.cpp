@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 #include "process.h"
+#include <iostream>
 
 //constructors
 process::process() {}
@@ -110,6 +111,9 @@ int process::getTotalWaitTime() const {
 	return (this -> waitTime);
 }
 
+int process::getLastTime() const {
+	return(this -> lastTime);	
+}
 
 //sets
 void process::setState(std::string newState) {
@@ -147,11 +151,14 @@ increment numBursts because this should only happen when a process is preempted,
 */
 void process::insertCPUTime(int newTime) { 
 	this -> cpuTimes.insert(cpuTimes.begin(), newTime);
-	numBursts++; 
+	numBursts = cpuTimes.size(); 
 }
 
 void process::removeCPUTime() {
+	setLastTime(cpuTimes[0]);
+	//std::cout << "last time: " << this -> lastTime << std::endl;
 	cpuTimes.erase(cpuTimes.begin());
+	numBursts = cpuTimes.size();
 }
 
 void process::removeIOTime() {
@@ -162,7 +169,7 @@ void process::addIOTime(int newTime) {
 	this -> ioTimes.push_back(newTime);
 }
 void process::setCPUFinTime(int newTime) {
-	this -> cpuFinTime = newTime;
+	this -> cpuFinTime = newTime + cpuTimes[0];
 }
 
 
@@ -176,9 +183,17 @@ void process::setInitialTau(int newTau) {
 	this -> tau = newTau;
 }
 
+void process::setLastTime(int newLastTime) {
+	this -> lastTime = newLastTime;
+}
+
 void process::setNewTau(double alpha, int t) {
+	//std::cout << "last time: " << lastTime << std::endl;
 	int oldTau = this -> tau;
-	int newTau = (alpha * oldTau) + ((1-alpha) * oldTau);
+	int newTau = ((alpha * oldTau) + ((1-alpha) * cpuTimes[0]));
+	removeCPUTime();
+	//std::cout << "old tau: " << oldTau << "\nNew tau: " << newTau << std::endl;
+	//std::cout << "alpha: " << alpha << std::endl;
 	this -> tau = newTau;
 }
 

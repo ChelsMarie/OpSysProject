@@ -19,5 +19,5 @@ void addProcesses(std::string alg, int t, std::vector<process> &NIQ, std::vector
 
 process * startCPU(int t, std::vector<process> &queue, process * usingCPU);
 
-
 void sjf(double alpha, std::vector<process> processes, int cs);
+void srt(double alpha, std::vector<process> processes, int cs);

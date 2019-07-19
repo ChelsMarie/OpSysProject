@@ -31,7 +31,7 @@ std::string getQueue(std::vector<process> queue) {
 }
 
 std::string getStart(int t) {
-	std::string message = "time " + std::to_string(t) + "ms: ";
+	std::string message = "time: " + std::to_string(t) + "ms: ";
 	return message;
 }
 /*
@@ -46,7 +46,6 @@ NIQ stands for "Not In Queue" and is for processes neither in queue or in IO
 
 //for preemptions that happen as a main event
 void checkPreempt(process * usingCPU, std::vector<process> &queue, int t) {
-	
 	int tl = usingCPU -> getCPUFinTime() - t;
 	for(uint i = 0; i < queue.size(); i++) {
 		if(queue[i].getCPUTime() < tl) {
@@ -76,9 +75,13 @@ std::string preempt(process * usingCPU, std::vector<process> &prev, std::vector<
 
 
 
-void termProcess(process p, int t, std::vector<process> queue) {
+void termProcess(std::vector<process>::iterator it, int t, std::vector<process> &queue) {
+	it -> setState("ready");
 	std::string message = getStart(t);
-	message += "Process " + std::to_string(p.getLet()) + " terminated" + getQueue(queue);
+	message += "Process ";
+	message +=  it -> getLet();
+	message +=  " terminated" + getQueue(queue);
+	queue.erase(it);
 	std::cout << message << std::endl;
 }
 
@@ -107,7 +110,7 @@ void finishIO(std::string alg, std::vector<process> &inIO, std::vector<process> 
 				queue.push_back(inIO[i]);
 				std::sort(queue.begin(), queue.end());
 			} else {
-				termProcess(inIO[i], t, queue);
+				termProcess(inIO.begin()+i, t, queue);
 			} 
 			inIO.erase(inIO.begin()+i);	
 		}
@@ -120,8 +123,8 @@ void recalcTau(std::vector<process> &queue, std::vector<process> &inIO, \
 	it -> setNewTau(alpha, t);
 	std::string message =  getStart(t);
 	message += " Recalculated tau = " + std::to_string(it -> getTau()); 
-	message +=  " ms for process ";
-	message +=  it -> getLet(); 
+	message += " ms for process ";
+	message += it -> getLet(); 
 	message += getQueue(queue);
 	std::cout << message << std::endl;
 }
@@ -134,6 +137,9 @@ void finishCPU(int t, double alpha, process * usingCPU, std::vector<process> &qu
 	}
 	if(it == queue.end()) return;
 	if(finTime == t) {
+		if(it -> getBursts() == 1) {
+			return(termProcess(it, t, queue));
+		}	
 		//it = std::find(queue.begin(), queue.end(), *usingCPU);
 		std::string message = getStart(t); 
 		message += "Process ";
@@ -144,12 +150,15 @@ void finishCPU(int t, double alpha, process * usingCPU, std::vector<process> &qu
 			it -> setState("blocked");	
 			it -> setIOFinTime(t);
 			inIO.push_back(*it);
-			it = inIO.end()-1;
 			queue.erase(it);
-			message += "\n" + getStart(t) + "Process" + it -> getLet();
+			it = inIO.end()-1;
+			message += "\n" + getStart(t) + "Process " + it -> getLet();
 			message += " switching out of CPU; will block on I/O until time ";
 			message += std::to_string(it -> getIOFinTime());
 			message += getQueue(queue); 
+			#ifdef DEBUGMODE
+			std::cout << "lastTime is: " << it->getLastTime() << std::endl;
+			#endif
 		}
 		std::cout << message << std::endl;
 		recalcTau(inIO, queue, it, t, alpha);
@@ -158,6 +167,11 @@ void finishCPU(int t, double alpha, process * usingCPU, std::vector<process> &qu
 
 void addProcesses(std::string alg, int t, std::vector<process> &NIQ, std::vector<process> &queue, \
  process * usingCPU) {
+	//we need the running process for preemption
+	std::vector<process>::iterator it;
+	for(it = queue.begin(); it != queue.end(); it++) {
+		if(it -> getState() == "running") break;
+	}
 	//check if any process arrive for the first time
 	for(uint i = 0; i < NIQ.size(); i++) {
 		if(NIQ[i].getArr() == t) { 
@@ -166,8 +180,8 @@ void addProcesses(std::string alg, int t, std::vector<process> &NIQ, std::vector
 			message += "time " + std::to_string(t) + "ms: Process " + NIQ[i].getLet(); 
 			message += " (tau " + std::to_string(NIQ[i].getTau()) +  " ms) arrived;";
 		
-			if(alg == "srt") {
-				int tl = (usingCPU -> getCPUFinTime()) - t; 	
+			if(queue.size() > 1 && alg == "srt" && it -> getState() == "running") {
+				int tl = (it -> getCPUFinTime()) - t; 	
 				if(NIQ[i].getCPUTime() < tl){
 					message += preempt(usingCPU, NIQ, queue, i, tl);	
 				}
@@ -201,12 +215,20 @@ process * startCPU(int t, std::vector<process> &queue) {
 		#endif
 		queue[0].setState("running");
 		queue[0].setCPUFinTime(t);
+		#ifdef DEBUGMODE
+		std::cout << "CPU will finish at " << queue[0].getCPUFinTime() << std::endl;
+		#endif
 		finTime = queue[0].getCPUFinTime();  
 		//usingCPU = &queue[0];
 		message += "time: " + std::to_string(t) + " ms: Process " + queue[0].getLet();
 		message += " (tau " + std::to_string(queue[0].getTau()) + ") started using";
 		message += " the CPU for " + std::to_string(queue[0].getCPUTime()) + "ms burst";
 		message += getQueue(queue);
+		//queue[0].setLastTime(queue[0].getCPUTime());
+		//queue[0].removeCPUTime();
+		#ifdef DEBUGMODE
+		//std::cout << "last time is: " << queue[0].getLastTime() << std::endl;
+		#endif
 		std::cout << message << std::endl;  
 	}
 	return(&(*queue.begin()));
@@ -231,7 +253,7 @@ void sjf(double alpha, std::vector<process> processes, int cs) {
 	for(uint i = 0; i < processes.size(); i++) {
 		std::cout << "Process " << processes[i].getLet() << " [NEW] (arrival time: ";
 		std::cout << processes[i].getArr() << "ms) " << processes[i].getBursts();
-		std::cout << " CPU bursts (tau " << processes[i].getCPUTime() << ")" << std::endl; 
+		std::cout << " CPU bursts (tau " << processes[i].getTau() << ")" << std::endl; 
 	}
 	int t = -1; //int to count up time
 	std::cout << "time 0ms: Simulator started for SJF [Q <empty>]"  << std::endl; 	
@@ -249,14 +271,16 @@ void sjf(double alpha, std::vector<process> processes, int cs) {
 		finishIO("sjf", inIO, queue, usingCPU, t);
 		//check if finished here
 		if(queue.size() == 0 && processes.size() == 0 && inIO.size() == 0) {
-			std::cout << "Done!" << std::endl;
+			std::string message = getStart(t);
+			message += "Simulater ended for SJF" + getQueue(queue);
+			std::cout << message << std::endl;
 			break;	
 		}
 	}
 }
 
 void srt(double alpha, std::vector<process> processes, int cs) {
-	std::sort(processes.begin(), processes.end(), letSort);
+	std::sort(processes.end(), processes.begin(), letSort);
 	csTime = cs;
 	//add processes as interarrival times are reached
 	std::vector<process> queue; 
@@ -265,14 +289,15 @@ void srt(double alpha, std::vector<process> processes, int cs) {
 	//as interarrival times are reached, add process to q  
 	for(uint i = 0; i < processes.size(); i++) {
 
-		std::cout << "Process" << processes[i].getLet() << "[NEW] (arrival time: ";
+		std::cout << "Process " << processes[i].getLet() << " [NEW] (arrival time: ";
 		std::cout << processes[i].getArr() << "ms )" << processes[i].getBursts();
-		std::cout << "CPU bursts (tau " << processes[i].getCPUTime() << ")" << std::endl; 
+		std::cout << "CPU bursts (tau " << processes[i].getTau() << ")" << std::endl; 
 	
 	}
 	int t = -1; //int to count up time
-	std::cout << "time 0ms: Simulator started for SJF [Q <empty>]"  << std::endl; 	
-	while(t++) { //time loop
+	std::cout << "time 0ms: Simulator started for SRT [Q <empty>]"  << std::endl; 	
+	while(1) { //time loop
+		t++;
 		if(inCS > 0) inCS--;	
 		addProcesses("srt", t, processes, queue, usingCPU);	
 		if(inCS == 0) {
@@ -284,5 +309,11 @@ void srt(double alpha, std::vector<process> processes, int cs) {
 		finishCPU(t, alpha, usingCPU, queue, inIO);
 		finishIO("srt", inIO, queue, usingCPU, t);
 		//check if finished here
+		if(queue.size() == 0 && processes.size() == 0 && inIO.size() == 0) {
+			std::string message = getStart(t);
+			message += "Simulater ended for SRT" + getQueue(queue);
+			std::cout << message << std::endl;
+			break;	
+		}
 	}
 }

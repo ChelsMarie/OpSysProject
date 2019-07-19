@@ -13,8 +13,8 @@ class process {
     char letter;
     int arrTime;
     int numBursts;
-	int waitTime;
-	int turnAroundTime;
+    int waitTime;
+    int turnAroundTime;
 
     std::vector<int> cpuTimes;
     std::vector<int> ioTimes;
@@ -23,6 +23,7 @@ class process {
     int cpuFinTime;
     int ioFinTime;
     int tau;
+    int lastTime; //stores most recent cpu burst time after its been deleted from cpuTimes
 
 	public:
 	//constructors
@@ -49,7 +50,7 @@ class process {
 	int getTurnaroundTime() const;
 	int getTotalWaitTime() const;
 	int getTau() const;
-
+	int getLastTime() const;
 
 	//sets
 	void setCPUTimes(std::vector<int> burstTimes);
@@ -61,7 +62,7 @@ class process {
 	void setInitialTau(int tau);
 	void setNewTau(double alpha, int t);
 	void setIOFinTime(int currentTime);
-
+	void setLastTime(int newLastTime);
 	void setLet(char newLet);
 	void setArrTime(int newArrTime);
 	void setNumBursts(int newBursts);
