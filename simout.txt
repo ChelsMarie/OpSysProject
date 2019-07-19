@@ -1,0 +1,6 @@
+Algorithm FCFS
+-- average CPU burst time: -1.34054e+08 ms
+-- average wait time: 0 ms
+-- average turnaround time: -1.34054e+08 ms
+-- total number of context switches: 0
+-- total number of preemptions: 0
