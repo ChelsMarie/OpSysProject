@@ -30,8 +30,6 @@ class process {
 	process();
 	process(char let, int arr, int bursts, int cTime, int iTime);
 	process(const process &p2);
-	process(const int finTime); //dummy constructor ONLY FOR WAITING ON CONTEXT SWITCH
-
 
 	//operators
 	bool operator<  (const process& p); //compares next burst time
@@ -51,7 +49,7 @@ class process {
 	int getTotalWaitTime() const;
 	int getTau() const;
 	int getLastTime() const;
-
+	int getIOLeft() const;
 	//sets
 	void setCPUTimes(std::vector<int> burstTimes);
 	void insertCPUTime(int newTime);

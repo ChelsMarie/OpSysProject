@@ -58,7 +58,7 @@ bool process::operator== (const process& p) {
 }
 
 bool letSort(const process& p1, const process& p2) {
-	return(p2. getLet() < p1.getLet());
+	return(p1.getLet() <  p2.getLet());
 }
 
 //gets
@@ -105,6 +105,10 @@ int process::getTau() const {
 
 int process::getTurnaroundTime() const {
 	return (this -> turnAroundTime);
+}
+
+int process::getIOLeft()  const{
+	return(ioTimes.size());
 }
 
 int process::getTotalWaitTime() const {
@@ -157,8 +161,10 @@ void process::insertCPUTime(int newTime) {
 void process::removeCPUTime() {
 	setLastTime(cpuTimes[0]);
 	//std::cout << "last time: " << this -> lastTime << std::endl;
-	cpuTimes.erase(cpuTimes.begin());
-	numBursts = cpuTimes.size();
+	if(cpuTimes.size() > 0) {
+		cpuTimes.erase(cpuTimes.begin());
+		numBursts = cpuTimes.size();
+	}
 }
 
 void process::removeIOTime() {
@@ -176,7 +182,7 @@ void process::setCPUFinTime(int newTime) {
 
 void process::setIOFinTime(int currentTime) {
 	this -> ioFinTime = currentTime + ioTimes[0];
-	ioTimes.erase(ioTimes.begin());
+	if(ioTimes.size() > 0) ioTimes.erase(ioTimes.begin());
 }
 
 void process::setInitialTau(int newTau) {
