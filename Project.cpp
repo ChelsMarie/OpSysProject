@@ -1,4 +1,5 @@
 //Project by Chelsea Bovell (bovelc) and George Tate (tateg)
+//TODO: edit placement var
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -74,32 +75,35 @@ void preemptionCheck(std::vector<process> &q, std::vector<process> &qReady, int 
 }
 
 void addToRunningQueue(std::vector<process> &q, std::vector<process> &qReady, int t) {
-    if (q.size() == 0) {
-        q.push_back(qReady[0]);
 
-        qReady.erase(qReady.begin());
-        q[0].setCPUFinTime(t + q[0].getCPUTime());
+    if (q.size() == 0 && qReady.size() > 0) {
+        q.push_back(qReady[0]);
+        //std::cout << "size of running after push back to it " << qReady.size() << std::endl;
+        q[0].setCPUFinTime(t);
         std::cout << "time " << t << "ms: Process " << q[0].getLet() << " started using the CPU for " << q[0].getCPUTime() << "ms burst [Q";
         printQueue(qReady);
         std::cout << "]" << std::endl;
-
-        q[0].setState("running");
+        std::cout << q[0].getLet() << " is the process not found in checkCPUFinish qRunning" << std::endl;
+        qReady.erase(qReady[0]);
     }
-
 }
 
 void checkCPUFinish(std::vector<process> &q, std::vector<process> &qReady, int cS, int timeSlice, std::string placement, int numPreemptions, int t) {
-    if (q[0].getCPUFinTime() == t) {
-          q[0].removeCPUTime();
-          std::cout << "time " << t << " << ms: Process " << q[0].getLet() << " completed a CPU burst; " << q[0].getBursts() << " bursts to go [Q";
-          printQueue(qReady);
-          std::cout << "]" << std::endl;
-          q.clear();
-          cS++;
-    }
-    else {
-        preemptionCheck(q,qReady,cS,timeSlice,placement,numPreemptions,t);
-    }
+
+    // if (q[0].getCPUFinTime() == t && q.size() == 1) {
+          //std::cout << "time " << t << "ms: Process " << q[0].getLet() << " completed a CPU burst; " << q[0].getBursts() << " bursts to go [Q";
+          //printQueue(qReady);
+          //std::cout << "]" << std::endl;
+                 //std::cout << q[0].getLet() << " is the process not found in checkCPUFinish qRunning" << std::endl;
+                 std::cout << "gets to 2nd func " << q[0].getArr() << std::endl;
+          // q[0].removeCPUTime();
+          // q.clear();
+          // cS++;
+    // }
+    // else {
+
+    //    // preemptionCheck(q,qReady,cS,timeSlice,placement,numPreemptions,t);
+   //  }
 }
 
 
@@ -172,25 +176,28 @@ std::cout << "time 0ms: Simulator started for RR [Q";
 printQueue(queueReady);
 std::cout << "]" << std::endl;
 
+
+
+while (time <= 100) {
 //prelim adding to readyqueue and showing cpu start burst
-for  (uint i = 0; i < procs.size(); i++) {
-  if (time == procs[i].getArr())  {
-    queueReady.push_back(procs[i]);
-    
-    procs[i].setState("ready");
-    std::cout << "time " << time << "ms: Process " << procs[i].getLet() << " arrived; added to ready queue [Q";
-    printQueue(queueReady);
-    std::cout << "]" << std::endl;
-  }
-    addToRunningQueue(queueRunning,queueReady,time);
-}
-
-while (queueDone.size() != numProc) {
-
+      for  (uint i = 0; i < procs.size(); i++) {
+        if (time == procs[i].getArr())  {
+          queueReady.push_back(procs[i]);
+          
+          procs[i].setState("ready");
+          std::cout << "time " << time << "ms: Process " << procs[i].getLet() << " arrived; added to ready queue [Q";
+          printQueue(queueReady);
+          std::cout << "]" << std::endl;
+        }
+        else {
+          time++;
+        }
+          // addToRunningQueue(queueRunning,queueReady,time);
+      }
         addToRunningQueue(queueRunning,queueReady,time);
         checkCPUFinish(queueRunning,queueReady,numContextSwitches,0,"",0,time);
-        checkIOFinish(queueRunning,queueReady,queueBlocked,time);
-        checkBurstsLeft(queueRunning,queueReady,queueBlocked,queueDone,time);
+         //checkIOFinish(queueRunning,queueReady,queueBlocked,time);
+         //checkBurstsLeft(queueRunning,queueReady,queueBlocked,queueDone,time);
 
         if (queueDone.size() == numProc) {
             break;
@@ -257,29 +264,34 @@ std::cout << "time 0ms: Simulator started for FCFS [Q";
 printQueue(queueReady);
 std::cout << "]" << std::endl;
 
-//prelim adding to readyqueue and showing cpu start burst
-for  (uint i = 0; i < procs.size(); i++) {
-  if (time == procs[i].getArr())  {
-    queueReady.push_back(procs[i]);
-    
-    procs[i].setState("ready");
-    std::cout << "time " << time << "ms: Process " << procs[i].getLet() << " arrived; added to ready queue [Q";
-    printQueue(queueReady);
-    std::cout << "]" << std::endl;
-  }
-    addToRunningQueue(queueRunning,queueReady,time);
-}
 
-while (queueDone.size() != numProc) {
+while (time <= 100) {
+
+
+        //prelim adding to readyqueue and showing cpu start burst
+        for  (uint i = 0; i < procs.size(); i++) {
+
+          if (time == procs[i].getArr())  {
+
+            queueReady.push_back(procs[i]);
+
+            procs[i].setState("ready");
+            std::cout << "time " << time << "ms: Process " << procs[i].getLet() << " arrived; added to ready queue [Q";
+            printQueue(queueReady);
+            std::cout << "]" << std::endl;
+          }
+        }
 
         addToRunningQueue(queueRunning,queueReady,time);
+        std::cout << "RunningQ[0] has " << queueRunning[0].getLet() << std::endl;
         checkCPUFinish(queueRunning,queueReady,numContextSwitches,0,"",0,time);
-        checkIOFinish(queueRunning,queueReady,queueBlocked,time);
-        checkBurstsLeft(queueRunning,queueReady,queueBlocked,queueDone,time);
+        // checkIOFinish(queueRunning,queueReady,queueBlocked,time);
+        // checkBurstsLeft(queueRunning,queueReady,queueBlocked,queueDone,time);
 
         if (queueDone.size() == numProc) {
             break;
         }
+
         time++;
 } //end of while
 
@@ -392,7 +404,6 @@ int main(int argc, char* argv[]) {
  }
 
     std::ofstream outputFile("simout.txt");
-  std::cout << "here" << std::endl;
 
     FCFS (numProcesses,processes,tCS,outputFile);
     //RR (numProcesses,processes,tCS,timeSlice,rrAdd,outputFile);
