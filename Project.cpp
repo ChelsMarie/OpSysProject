@@ -108,7 +108,7 @@ void checkCPUFinish(std::vector<process> &q, std::vector<process> &qReady, int c
 //if it does, add it to the blocked queue
 void checkBurstsLeft(std::vector<process> &q, std::vector<process> &qReady, std::vector<process> &qBlocked, std::vector<process> &qDone, int t) {
     if (q[0].getBursts() != 0) {
-        q[0].setIOFinTime(t + q[0].getIOTime());
+        q[0].setIOFinTime(t);
         q[0].setState("blocked");
         qBlocked.push_back(q[0]);
         q.clear();
@@ -340,13 +340,15 @@ int main(int argc, char* argv[]) {
   tCS = atoi(argv[5]);
   alpha  = atof(argv[6]);
   timeSlice = atoi(argv[7]);
-  rrAdd = (std::string) argv[8];
+
+  if (argc == 9) {
+      rrAdd = (std::string) argv[8];
+  }
 
 
   std::vector<process> processes;
   std::string alphabetLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-  std::cout << "here" << std::endl;
   //does stackdump file error with everything else commented out
   //do interarrival times
   srand48( seed );
@@ -389,8 +391,9 @@ int main(int argc, char* argv[]) {
  }
 
     std::ofstream outputFile("simout.txt");
+  std::cout << "here" << std::endl;
 
-    //FCFS (numProcesses,processes,tCS,outputFile);
+    FCFS (numProcesses,processes,tCS,outputFile);
     //RR (numProcesses,processes,tCS,timeSlice,rrAdd,outputFile);
     //sjf(alpha, processes, tCS);
     outputFile.close();
