@@ -84,7 +84,7 @@ void addToRunningQueue(std::vector<process> &q, std::vector<process> &qReady, in
         printQueue(qReady);
         std::cout << "]" << std::endl;
         std::cout << q[0].getLet() << " is the process not found in checkCPUFinish qRunning" << std::endl;
-        qReady.erase(qReady[0]);
+        qReady.erase(qReady.begin());
     }
 }
 
@@ -392,7 +392,7 @@ int main(int argc, char* argv[]) {
       x = -log( r ) / lambda;
       proc.addCPUTime((int)ceil(x));
 
-      if(j != proc.getBursts()-1) {
+      if(j < proc.getBursts()-1) {
         r = drand48();
         x = -log( r ) / lambda;
 	     proc.addIOTime(ceil(x));
@@ -405,9 +405,10 @@ int main(int argc, char* argv[]) {
 
     std::ofstream outputFile("simout.txt");
 
-    FCFS (numProcesses,processes,tCS,outputFile);
+    //FCFS (numProcesses,processes,tCS,outputFile);
     //RR (numProcesses,processes,tCS,timeSlice,rrAdd,outputFile);
-    //sjf(alpha, processes, tCS);
+    sjf(alpha, processes, tCS);
+    srt(alpha, processes, tCS);
     outputFile.close();
 
 
