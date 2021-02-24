@@ -1,4 +1,4 @@
 # OpSysProject
-Partner: Geordie Tate
+Partner: Catherine Tate
 
 
